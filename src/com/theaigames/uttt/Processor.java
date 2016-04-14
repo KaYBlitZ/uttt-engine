@@ -28,14 +28,6 @@ import com.theaigames.uttt.moves.MoveResult;
 import com.theaigames.uttt.player.Player;
 
 public class Processor implements GameHandler {
-	/*
-	 * update game round i
-	 * update game move i
-	 * update gamefield [ ... ]
-	 * update game macroboard [ ... ]
-	 * action move t
-	 */
-    
     private int mRoundNumber = 1;
     private List<Player> mPlayers;
     private List<Move> mMoves;
@@ -59,6 +51,13 @@ public class Processor implements GameHandler {
 
     @Override
     public void playRound(int roundNumber) {
+    	/*
+    	 * update game round i
+    	 * update game move i
+    	 * update gamefield [ ... ]
+    	 * update game macroboard [ ... ]
+    	 * action move t
+    	 */
         for (Player player : mPlayers) {
             player.sendUpdate("round",  mRoundNumber);
             player.sendUpdate("move", mMoveNumber);

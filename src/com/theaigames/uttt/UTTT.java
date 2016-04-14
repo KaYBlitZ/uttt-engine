@@ -40,7 +40,7 @@ public class UTTT extends AbstractGame {
         this.players = new ArrayList<Player>(2);
         
         // create the playing field
-        this.mMacroField = new MacroField(FIELD_COLUMNS, FIELD_ROWS);
+        this.mMacroField = new MacroField();
         
         for(int i=0; i<ioPlayers.size(); i++) {
             // create the player

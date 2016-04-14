@@ -17,17 +17,20 @@
 
 package com.theaigames.uttt.field;
 
-public class MacroField {
-	// represents the field
-	
+public class MacroField { // represents the entire field
+	// macro is the large 3 x 3 TTT board
+	// mini is a small 3 x 3 TTT board
+	// field is the entire 9 x 9 board
 	private final int FIELD_COLUMNS = 9;
 	private final int FIELD_ROWS = 9;
 	private final int MACRO_COLUMNS = 3;
 	private final int MACRO_ROWS = 3;
+	private final int MINI_COLUMNS = 3;
+	private final int MINI_ROWS = 3;
 	
-	private final int FIELD_EMPTY = 0;
+	private final int FIELD_PLAYABLE = 0;
 	private final int MACRO_PLAYABLE = -1;
-	private final int MACRO_UNPLAYABLE = 0; // or tie
+	private final int MACRO_UNPLAYABLE = 0, MACRO_TIE = 0;
     
 	/* Index 0 is the top left box and index 48 is the bottom-right.
 	 * Move from left to right, top to bottom, as indices increase.
@@ -38,6 +41,7 @@ public class MacroField {
 	private int mLastColumn, mLastRow;
     private String mWinType = "None";
 	private boolean isFinished = false;
+	private int mWinner; // 0 is tie, -1 means game is still ongoing
 
     public MacroField() {
 		mField = new int[FIELD_COLUMNS * FIELD_ROWS];
@@ -47,14 +51,14 @@ public class MacroField {
     
     public void clearBoard() {
         for (int i = 0; i < FIELD_COLUMNS * FIELD_ROWS; i++) {
-            mField[i] = 0;
+            mField[i] = FIELD_PLAYABLE;
         }
         for (int i = 0; i < MACRO_COLUMNS * MACRO_ROWS; i++) {
-            mMacro[i] = 0;
+            mMacro[i] = MACRO_PLAYABLE;
         }
     }
     
-    public void dumpBoard() {
+    /*public void dumpBoard() {
         for (int x = 0; x < mCols; x++) {
             System.out.print("--");
         }
@@ -68,7 +72,7 @@ public class MacroField {
             }
             System.out.print("\n");
         }
-    }
+    }*/
     
     public static String padRight(String s, int n) {
          return String.format("%1$-" + n + "s", s);  
@@ -92,13 +96,15 @@ public class MacroField {
         }
         /*
          *  We need to check if macro board is playable
-         *  If yes, play it
+         *  If yes, try play it
          *  Determine next playable macro board
          */
         if (mMacro[macroIndex] == MACRO_PLAYABLE) {
-	    	if (mField[fieldIndex] == FIELD_EMPTY) {
+	    	if (mField[fieldIndex] == FIELD_PLAYABLE) {
 	    		mField[fieldIndex] = marker;
-	    		// determine next 
+	    		// determine next macro field
+	    		updateMacro(macroIndex);
+	    		checkWinner();
 				return true;
 	        } else {
 				mLastError = String.format("Field not empty. (%d, %d)", column, row);
@@ -140,55 +146,133 @@ public class MacroField {
 		return -1;
 	}
 	
-	private int getTTTWinner(int macroIndex) {
+	public void updateMacro(int nextMacroIndex) {
+		for (int i = 0; i < mMacro.length; i++) {
+			int winner = getMiniWinner(i);
+			if (winner >= 0) { // winner, tie, or unplayable
+				mMacro[i] = winner;
+			} else { // open mini TTT, need to check if playable or not
+				if (i == nextMacroIndex) {
+					mMacro[i] = MACRO_PLAYABLE;
+				} else {
+					mMacro[i] = MACRO_UNPLAYABLE;
+				}
+			}
+		}
+	}
+	
+	public void checkWinner() {
+		/* horizontal */
+		if (mMacro[0] > 0 && mMacro[0] == mMacro[1] && mMacro[1] == mMacro[2]) {
+			mWinner = mMacro[0];
+		} else if (mMacro[3] > 0 && mMacro[3] == mMacro[4] && mMacro[4] == mMacro[5]) {
+			mWinner = mMacro[3];
+		} else if (mMacro[6] > 0 && mMacro[6] == mMacro[7] && mMacro[7] == mMacro[8]) {
+			mWinner = mMacro[6];
+		}
+		/* vertical */
+		else if (mMacro[0] > 0 && mMacro[0] == mMacro[3] && mMacro[3] == mMacro[6]) {
+			mWinner = mMacro[0];
+		} else if (mMacro[1] > 0 && mMacro[1] == mMacro[4] && mMacro[4] == mMacro[7]) {
+			mWinner = mMacro[1];
+		} else if (mMacro[2] > 0 && mMacro[2] == mMacro[5] && mMacro[5] == mMacro[8]) {
+			mWinner = mMacro[2];
+		}
+		/* forward diagonal / */
+		else if (mMacro[0] > 0 && mMacro[0] == mMacro[4] && mMacro[4] == mMacro[8]) {
+			mWinner = mMacro[0];
+		}
+		/* backward diagonal \ */
+		else if (mMacro[6] > 0 && mMacro[6] == mMacro[4] && mMacro[4] == mMacro[2]) {
+			mWinner = mMacro[6];
+		} else { //no winner
+			for (int i = 0; i < mMacro.length; i++) {
+				if (mMacro[i] == -1) {
+					// still open
+					mWinner = -1;
+					return;
+				}
+			}
+			mWinner = 0; // tie
+		}
+	}
+	
+	/**
+	 * Returns winner if the mini TTT game is won; 0 if there is a tie; -1 if open
+	 * @param macroIndex
+	 * @return
+	 */
+	private int getMiniWinner(int macroIndex) {
+		if (macroIndex < 0 && macroIndex >= MACRO_ROWS * MACRO_COLUMNS) {
+			throw new RuntimeException("Invalid macro index in getTTTWinner");
+		}
+		
 		int[][] board = new int[3][3]; // small tic tac toe board
+		int bRow, bCol;
+		// determine the top-left square indices of the smaller TTT board 
+		if (macroIndex < 3) {
+			bRow = 0;
+		} else if (macroIndex >= 3 && macroIndex < 6) {
+			bRow = 3;
+		} else {
+			bRow = 6;
+		}
+		if (macroIndex == 0 || macroIndex == 3 || macroIndex == 6) {
+			bCol = 0;
+		} else if (macroIndex == 1 || macroIndex == 4 || macroIndex == 7) {
+			bCol = 3;
+		} else {
+			bCol = 6;
+		}
+		int bFieldIndex = getFieldIndex(bCol, bRow); // the beginning square indices as field index
+		board[0][0] = mField[bFieldIndex];
+		board[1][0] = mField[bFieldIndex + 1];
+		board[2][0] = mField[bFieldIndex + 2];
+		board[0][1] = mField[bFieldIndex + FIELD_COLUMNS];
+		board[1][1] = mField[bFieldIndex + 1 + FIELD_COLUMNS];
+		board[2][1] = mField[bFieldIndex + 2 + FIELD_COLUMNS];
+		board[0][2] = mField[bFieldIndex];
+		board[1][2] = mField[bFieldIndex + 1 + FIELD_COLUMNS];
+		board[2][2] = mField[bFieldIndex + 2 + FIELD_COLUMNS];
     	
 		/* Check for vertical wins */
-        for (int x = 0; x < mCols; x++) {
-        	if (winner[x][0] == -1 || winner[x][0] == 0) continue; // don't check if running or tied
-            if (winner[x][0] == winner[x][1] && winner[x][1] == winner[x][2]) {
-				mWinType = "vertical";
-				isFinished = true;
-				mWinner = winner[x][0];
-				return mWinner;
+        for (int x = 0; x < MINI_COLUMNS; x++) {
+        	if (board[x][0] == 0) continue; // don't check if open square
+            if (board[x][0] == board[x][1] && board[x][1] == board[x][2]) {
+				return board[x][0];
             }
         }
         
 		/* Check for horizontal wins */
-		for (int y = 0; y < mRows; y++) {
-			if (winner[0][y] == -1 || winner[0][y] == 0) continue; // don't check if running or tied
-			if (winner[0][y] == winner[1][y] && winner[1][y] == winner[2][y]) {
-				mWinType = "horizontal";
-				isFinished = true;
-				mWinner = winner[0][y];
-				return mWinner;
+		for (int y = 0; y < MINI_ROWS; y++) {
+			if (board[0][y] == 0) continue; // don't check if running or tied
+			if (board[0][y] == board[1][y] && board[1][y] == board[2][y]) {
+				return board[0][y];
             }
         }
         
 		/* Check for forward diagonal wins - / */
-		if (winner[0][2] != -1 && winner[0][2] != 0 && // don't check if running or tied
-				winner[0][2] == winner[1][1] && winner[1][1] == winner[2][0]) {
-			mWinType = "forward diagonal";
-			isFinished = true;
-			mWinner = winner[0][2];
-			return mWinner;
+		if (board[0][2] != 0 && // don't check if open; dont want to count opens as winner
+				board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
+			return board[0][2];
 		}
 		
 		/* Check for backward diagonal wins - \ */
-		if (winner[0][0] != -1 && winner[0][0] != 0 && // don't check if running or tied
-				winner[0][0] == winner[1][1] && winner[1][1] == winner[2][2]) {
-			mWinType = "backward diagonal";
-			isFinished = true;
-			mWinner = winner[0][0];
-			return mWinner;
+		if (board[0][0] != 0 && // don't check if open
+				board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
+			return board[0][0];
 		}
 		
-		if (isFull()) {
-			mWinner = 0;
-			return mWinner;
+		// check if the board is full
+		for (int x = 0; x < MINI_COLUMNS; x++) {
+			for (int y = 0; y < MINI_ROWS; y++) {
+				if (board[x][y] == FIELD_PLAYABLE) // not a tie
+					return MACRO_PLAYABLE; 
+			}
 		}
-
-        return -1;
+		
+		// must be a tie
+        return MACRO_TIE;
 	}
     
     /**
@@ -213,33 +297,17 @@ public class MacroField {
 		return mLastRow;
 	}
     
-    @Override
     /**
-     * Creates comma separated String with player names for every cell.
+     * Creates comma separated String of the macro board.
+     * player id if won, 0 if not playable or tie, -1 if playable
      * @param args : 
-     * @return : comma separated String of player id if won, 0 if not playable, -1 if playable
+     * @return : comma separated String of the macro board
      */
-    public String toString() {
+    public String getStringMacroField() {
         StringBuilder builder = new StringBuilder();
-        for (int x = 0; x < mCols; x++) {
-        	for (int y = 0; y < mRows; y++) {
-        		int winner = mField[x][y].getWinner();
-        		if (winner > 0) { // have winner
-        			builder.append(winner);
-        		} else if (winner == 0) { // is tied
-        			builder.append(0);
-        		} else if (mCurrentCol == -1 && mCurrentRow == -1) { // playable
-        			builder.append(-1);
-        		} else { // need to check if playable
-        			if (mCurrentCol == x && mCurrentRow == y) { // playable
-        				builder.append(-1);
-        			} else {
-        				builder.append(0); // not playable
-        			}
-        		}
-        		// append comma if not last field
-        		if (x != mCols - 1 && y != mRows - 1) builder.append(',');
-        	}
+        for (int x = 0; x < mMacro.length; x++) {
+        	builder.append(mMacro[x]);
+        	if (x != mMacro.length - 1) builder.append(',');
         }
         return builder.toString();
     }
@@ -251,12 +319,12 @@ public class MacroField {
      * @return String
      */
     public String getFieldsString() {
-    	for (int x = 0; x < 9; x++) {
-    		for (int y = 0; y < 9; y++) {
-    			
-    		}
+    	StringBuilder builder = new StringBuilder();
+    	for (int i = 0; i < mField.length; i++) {
+    		builder.append(mField[i]);
+    		if (i != mField.length - 1) builder.append(',');
     	}
-    	return null;
+    	return builder.toString();
     }
     
     /**
@@ -267,79 +335,14 @@ public class MacroField {
 	public boolean isFinished() {
 		return isFinished;
     }
-	
-	public boolean isFull() {
-		for (int x = 0; x < mCols; x++) {
-			for (int y = 0; y < mRows; y++) {
-				if (mField[x][y].getWinner() == -1) return false;
-			}
-		}
-		return true;
-	}
     
     /**
-     * Checks if there is a winner, if so, returns player id.
+     * Returns player id if there is a winner, 0 if tied, -1 if game is not finished.
      * @param args : 
-     * @return : Returns player id if there is a winner, 0 if tied, -1 if open.
+     * @return : Returns the winner
      */
     public int getWinner() {
-    	int winner[][] = new int[mCols][mRows];
-    	winner[0][0] = mField[0][0].getWinner();
-    	winner[0][1] = mField[0][1].getWinner();
-    	winner[0][2] = mField[0][2].getWinner();
-    	winner[1][0] = mField[1][0].getWinner();
-    	winner[1][1] = mField[1][1].getWinner();
-    	winner[1][2] = mField[1][2].getWinner();
-    	winner[2][0] = mField[2][0].getWinner();
-    	winner[2][1] = mField[2][1].getWinner();
-    	winner[2][2] = mField[2][2].getWinner();
-    	
-		/* Check for vertical wins */
-        for (int x = 0; x < mCols; x++) {
-        	if (winner[x][0] == -1 || winner[x][0] == 0) continue; // don't check if running or tied
-            if (winner[x][0] == winner[x][1] && winner[x][1] == winner[x][2]) {
-				mWinType = "vertical";
-				isFinished = true;
-				mWinner = winner[x][0];
-				return mWinner;
-            }
-        }
-        
-		/* Check for horizontal wins */
-		for (int y = 0; y < mRows; y++) {
-			if (winner[0][y] == -1 || winner[0][y] == 0) continue; // don't check if running or tied
-			if (winner[0][y] == winner[1][y] && winner[1][y] == winner[2][y]) {
-				mWinType = "horizontal";
-				isFinished = true;
-				mWinner = winner[0][y];
-				return mWinner;
-            }
-        }
-        
-		/* Check for forward diagonal wins - / */
-		if (winner[0][2] != -1 && winner[0][2] != 0 && // don't check if running or tied
-				winner[0][2] == winner[1][1] && winner[1][1] == winner[2][0]) {
-			mWinType = "forward diagonal";
-			isFinished = true;
-			mWinner = winner[0][2];
-			return mWinner;
-		}
-		
-		/* Check for backward diagonal wins - \ */
-		if (winner[0][0] != -1 && winner[0][0] != 0 && // don't check if running or tied
-				winner[0][0] == winner[1][1] && winner[1][1] == winner[2][2]) {
-			mWinType = "backward diagonal";
-			isFinished = true;
-			mWinner = winner[0][0];
-			return mWinner;
-		}
-		
-		if (isFull()) {
-			mWinner = 0;
-			return mWinner;
-		}
-
-        return -1;
+    	return mWinner;
     }
     
     
@@ -350,13 +353,5 @@ public class MacroField {
      */
     public String getWinType() {
         return mWinType;
-    }
-
-    public int getNrColumns() {
-        return mCols;
-    }
-    
-    public int getNrRows() {
-        return mRows;
     }
 }
