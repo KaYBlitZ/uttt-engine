@@ -40,13 +40,15 @@ public abstract class AbstractPlayer {
     private long timeBank;
     private long maxTimeBank;
     private long timePerMove;
+    private int mId;
     
-    public AbstractPlayer(String name, IOPlayer bot, long maxTimeBank, long timePerMove) {
+    public AbstractPlayer(String name, IOPlayer bot, long maxTimeBank, long timePerMove, int id) {
         this.name = name;
         this.bot = bot;
         this.timeBank = maxTimeBank;
         this.maxTimeBank = maxTimeBank;
         this.timePerMove = timePerMove;
+        this.mId = id;
     }
     
     /**
@@ -68,6 +70,10 @@ public abstract class AbstractPlayer {
      */
     public IOPlayer getBot() {
         return bot;
+    }
+    
+    public int getId() {
+        return mId;
     }
 
     /**

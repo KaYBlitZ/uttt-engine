@@ -31,16 +31,13 @@ public class UTTT extends AbstractGame {
     
     private final int TIMEBANK_MAX = 10000;
     private final int TIME_PER_MOVE = 500;
-	private final int FIELD_COLUMNS = 3;
-	private final int FIELD_ROWS = 3;
     private List<Player> players;
     private MacroField mMacroField;
-    private int mBotId = 1;
 
     @Override
     public void setupGame(ArrayList<IOPlayer> ioPlayers) throws Exception {         
         // create all the players and everything they need
-        this.players = new ArrayList<Player>();
+        this.players = new ArrayList<Player>(2);
         
         // create the playing field
         this.mMacroField = new MacroField(FIELD_COLUMNS, FIELD_ROWS);
@@ -55,7 +52,6 @@ public class UTTT extends AbstractGame {
         
         for(AbstractPlayer player : this.players) {
             sendSettings(player);
-            
         }
         
         // create the processor
@@ -68,8 +64,7 @@ public class UTTT extends AbstractGame {
         player.sendSetting("time_per_move", TIME_PER_MOVE);
         player.sendSetting("player_names", this.players.get(0).getName() + "," + this.players.get(1).getName());
         player.sendSetting("your_bot", player.getName());
-        player.sendSetting("your_botid",mBotId);
-        mBotId++;
+        player.sendSetting("your_botid", player.getId());
     }
 
     @Override
