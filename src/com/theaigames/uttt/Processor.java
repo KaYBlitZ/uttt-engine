@@ -24,14 +24,12 @@ import com.theaigames.game.GameHandler;
 import com.theaigames.game.player.AbstractPlayer;
 import com.theaigames.uttt.field.MacroField;
 import com.theaigames.uttt.moves.Move;
-import com.theaigames.uttt.moves.MoveResult;
 import com.theaigames.uttt.player.Player;
 
 public class Processor implements GameHandler {
-    private int mRoundNumber = 1;
+	private int mRoundNumber = 1, mMoveNumber = 1;
     private List<Player> mPlayers;
     private List<Move> mMoves;
-    private List<MoveResult> mMoveResults;
     private MacroField mMacroField;
     private int mGameOverByPlayerErrorPlayerId = 0;
 
@@ -39,13 +37,11 @@ public class Processor implements GameHandler {
         mPlayers = players;
         mMacroField = field;
         mMoves = new ArrayList<Move>();
-        mMoveResults = new ArrayList<MoveResult>();
         
         /* Create first move with empty field */
         Move move = new Move(mPlayers.get(0));
-        MoveResult moveResult = new MoveResult(mPlayers.get(0), mMacroField, mPlayers.get(0).getId());
+		move.setField(mMacroField.getFieldString());
         mMoves.add(move);
-        mMoveResults.add(moveResult);
     }
 
 
@@ -61,69 +57,60 @@ public class Processor implements GameHandler {
         for (Player player : mPlayers) {
             player.sendUpdate("round",  mRoundNumber);
             player.sendUpdate("move", mMoveNumber);
-            player.sendUpdate("field", 0);
-            player.sendUpdate("macroboard", mMacroField.toString());
-            if (getWinner() == null) {
+			player.sendUpdate("field", mMacroField.getFieldString());
+			player.sendUpdate("macroboard", mMacroField.getMacroFieldString());
+			if (!isGameOver()) {
                 String response = player.requestMove("move");
                 Move move = new Move(player);
-                MoveResult moveResult = new MoveResult(player, mMacroField, player.getId());
-                if (parseResponse(response, player)) {
+				if (parseResponse(response, player)) { // successful move
                     move.setColumn(mMacroField.getLastColumn());
-                    move.setIllegalMove(mMacroField.getLastError());
+					move.setRow(mMacroField.getLastRow());
                     mMoves.add(move);
-                    moveResult = new MoveResult(player, mMacroField, player.getId());
-                    moveResult.setColumn(mMacroField.getLastColumn());
-                    moveResult.setIllegalMove(mMacroField.getLastError());
-                    mMoveResults.add(moveResult);
-                } else {
-                    move = new Move(player); moveResult = new MoveResult(player, mMacroField, player.getId());
+				} else { // 1st try bad move
                     move.setColumn(mMacroField.getLastColumn());
+					move.setRow(mMacroField.getLastRow());
                     move.setIllegalMove(mMacroField.getLastError() + " (first try)");
                     mMoves.add(move);
-                    moveResult.setColumn(mMacroField.getLastColumn());
-                    moveResult.setIllegalMove(mMacroField.getLastError() + " (first try)");
-                    mMoveResults.add(moveResult);
-                    player.sendUpdate("field", mMacroField.toString());
+					player.sendUpdate("field", mMacroField.getFieldString());
+					player.sendUpdate("macroboard", mMacroField.getMacroFieldString());
                     response = player.requestMove("move");
                     if (parseResponse(response, player)) {
-                        move = new Move(player); moveResult = new MoveResult(player, mMacroField, player.getId());
+						move = new Move(player);
                         move.setColumn(mMacroField.getLastColumn());
+						move.setRow(mMacroField.getLastRow());
                         mMoves.add(move);
-                        moveResult.setColumn(mMacroField.getLastColumn());
-                        mMoveResults.add(moveResult);
-                    } else {
-                        move = new Move(player); moveResult = new MoveResult(player, mMacroField, player.getId());
+					} else { // 2nd try bad move
+						move = new Move(player);
                         move.setColumn(mMacroField.getLastColumn());
+						move.setRow(mMacroField.getLastRow());
                         move.setIllegalMove(mMacroField.getLastError() + " (second try)");
                         mMoves.add(move);
-                        moveResult.setColumn(mMacroField.getLastColumn());
-                        moveResult.setIllegalMove(mMacroField.getLastError() + " (second try)");
-                        mMoveResults.add(moveResult);
-                        player.sendUpdate("field", mMacroField.toString());
+						player.sendUpdate("field", mMacroField.getFieldString());
+						player.sendUpdate("macroboard", mMacroField.getMacroFieldString());
                         response = player.requestMove("move");
                         if (parseResponse(response, player)) {
-                            move = new Move(player); moveResult = new MoveResult(player, mMacroField, player.getId());
+							move = new Move(player);
                             move.setColumn(mMacroField.getLastColumn());
-                            mMoves.add(move);                           
-                            moveResult.setColumn(mMacroField.getLastColumn());
-                            mMoveResults.add(moveResult);
+							move.setRow(mMacroField.getLastRow());
+							mMoves.add(move);
                         } else { /* Too many errors, other player wins */
-                            move = new Move(player); moveResult = new MoveResult(player, mMacroField, player.getId());
+							// 3rd try bad move, game over
+							move = new Move(player);
                             move.setColumn(mMacroField.getLastColumn());
+							move.setRow(mMacroField.getLastRow());
                             move.setIllegalMove(mMacroField.getLastError() + " (last try)");
                             mMoves.add(move);
-                            moveResult.setColumn(mMacroField.getLastColumn());
-                            moveResult.setIllegalMove(mMacroField.getLastError() + " (last try)");
-                            mMoveResults.add(moveResult);
                             mGameOverByPlayerErrorPlayerId = player.getId();
                         }
                     }
                 }
                 
-                player.sendUpdate("field", mMacroField.toString());
-                mRoundNumber++;
+				player.sendUpdate("field", mMacroField.getFieldString());
+				player.sendUpdate("macroboard", mMacroField.getMacroFieldString());
+				mMoveNumber++;
             }
         }
+        mRoundNumber++; // round increases after both players play
     }
     
     /**
@@ -133,13 +120,14 @@ public class Processor implements GameHandler {
      */
     private Boolean parseResponse(String r, Player player) {
         String[] parts = r.split(" ");
-        if (parts.length >= 2 && parts[0].equals("place_disc")) {
+		if (parts.length >= 3 && parts[0].equals("place_move")) {
             int column = Integer.parseInt(parts[1]);
-            if (mMacroField.addDisc(column, player.getId())) {
+			int row = Integer.parseInt(parts[2]);
+			if (mMacroField.addMarker(column, row, player.getId())) {
                 return true;
             }
         }
-        mMacroField.mLastError = "Unknown command";
+		// mMacroField.mLastError = "Unknown command";
         return false;
     }
 
@@ -150,7 +138,6 @@ public class Processor implements GameHandler {
 
     @Override
     public AbstractPlayer getWinner() {
-        int winner = mMacroField.getWinner();
         if (mGameOverByPlayerErrorPlayerId > 0) { /* Game over due to too many player errors. Look up the other player, which became the winner */
             for (Player player : mPlayers) {
                 if (player.getId() != mGameOverByPlayerErrorPlayerId) {
@@ -158,14 +145,15 @@ public class Processor implements GameHandler {
                 }
             }
         }
-        if (winner != 0) {
+		int winner = mMacroField.getWinner();
+		if (winner > 0) {
             for (Player player : mPlayers) {
                 if (player.getId() == winner) {
                     return player;
                 }
             }
         }
-        return null;
+		return null; // either tie or game not over
     }
 
     @Override
@@ -182,12 +170,13 @@ public class Processor implements GameHandler {
         return mMoves;
     }
     
-    public MacroField getField() {
+	public MacroField getMacroField() {
         return mMacroField;
     }
 
     @Override
     public boolean isGameOver() {
-        return (getWinner() != null || mMacroField.isFull());
+		// -1 is game still ongoing; 0 is tied game
+		return getWinner() != null || mMacroField.getWinner() != -1;
     }
 }

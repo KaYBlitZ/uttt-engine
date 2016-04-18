@@ -40,7 +40,6 @@ public class MacroField { // represents the entire field
     public String mLastError = "";
 	private int mLastColumn, mLastRow;
     private String mWinType = "None";
-	private boolean isFinished = false;
 	private int mWinner; // 0 is tie, -1 means game is still ongoing
 
     public MacroField() {
@@ -303,7 +302,7 @@ public class MacroField { // represents the entire field
      * @param args : 
      * @return : comma separated String of the macro board
      */
-    public String getStringMacroField() {
+	public String getMacroFieldString() {
         StringBuilder builder = new StringBuilder();
         for (int x = 0; x < mMacro.length; x++) {
         	builder.append(mMacro[x]);
@@ -318,22 +317,13 @@ public class MacroField { // represents the entire field
      * going right. 
      * @return String
      */
-    public String getFieldsString() {
+	public String getFieldString() {
     	StringBuilder builder = new StringBuilder();
     	for (int i = 0; i < mField.length; i++) {
     		builder.append(mField[i]);
     		if (i != mField.length - 1) builder.append(',');
     	}
     	return builder.toString();
-    }
-    
-    /**
-     * Checks whether the field is full
-     * @param args : 
-     * @return : Returns true when field is full, otherwise returns false.
-     */
-	public boolean isFinished() {
-		return isFinished;
     }
     
     /**

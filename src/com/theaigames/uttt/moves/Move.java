@@ -22,7 +22,8 @@ import com.theaigames.game.player.AbstractPlayer;
 
 public class Move extends AbstractMove {
 
-	private int mColumn, mRow, mMacro; // macro is the large board location
+	private String mField;
+	private int mColumn, mRow;
     
     public Move(AbstractPlayer player) {
         super(player);
@@ -50,11 +51,15 @@ public class Move extends AbstractMove {
 		this.mRow = mRow;
 	}
 
-	public int getMacro() {
-		return mMacro;
+	public int getPlayerId() {
+		return getPlayer().getId();
 	}
 
-	public void setMacro(int mMacro) {
-		this.mMacro = mMacro;
+	public void setField(String field) {
+		mField = field;
+	}
+
+	public String getField() {
+		return mField;
 	}
 }
