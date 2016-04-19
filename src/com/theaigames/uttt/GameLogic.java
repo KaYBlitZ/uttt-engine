@@ -15,12 +15,12 @@
 //    For the full copyright and license information, please view the LICENSE
 //    file that was distributed with this source code.
 
-package com.theaigames.engine;
-
-import com.theaigames.engine.io.IOPlayer;
-import com.theaigames.game.player.AbstractPlayer;
+package com.theaigames.uttt;
 
 import java.util.ArrayList;
+
+import com.theaigames.engine.io.PlayerBot;
+import com.theaigames.uttt.player.Player;
 
 /**
  * Logic interface
@@ -31,10 +31,13 @@ import java.util.ArrayList;
  * 
  * @author Jackie Xu <jackie@starapple.nl>, Jim van Eeden <jim@starapple.nl>
  */
-public interface Logic {
-    public void setupGame(ArrayList<IOPlayer> players) throws Exception; // create the players, set up the game
-    public void playRound(int roundNumber); // play a round
-    public void sendSettings(AbstractPlayer player); // send the game settings to given player
+public interface GameLogic {
+    public void setupGame(ArrayList<PlayerBot> players) throws Exception; // create the players, set up the game
+
+	public void playRound(int roundNumber); // play a round
+
+	public void sendSettings(Player player); // send the game settings to given
+												// player
     public boolean isGameOver(); // check if the game is over
     public void finish() throws Exception; // wrap things up
     public void saveGame() throws Exception; // save all the game data

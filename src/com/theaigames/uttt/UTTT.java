@@ -21,24 +21,22 @@ package com.theaigames.uttt;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.theaigames.engine.io.IOPlayer;
-import com.theaigames.game.AbstractGame;
-import com.theaigames.game.player.AbstractPlayer;
+import com.theaigames.engine.io.PlayerBot;
+import com.theaigames.game.Processor;
 import com.theaigames.uttt.field.MacroField;
 import com.theaigames.uttt.player.Player;
 
 public class UTTT extends AbstractGame {
     
-    private final int TIMEBANK_MAX = 10000;
+	public final static int TIMEBANK_MAX = 10000;
     private final int TIME_PER_MOVE = 500;
     private List<Player> players;
     private MacroField mMacroField;
 
     @Override
-    public void setupGame(ArrayList<IOPlayer> ioPlayers) throws Exception {         
+    public void setupGame(ArrayList<PlayerBot> ioPlayers) throws Exception {         
         // create all the players and everything they need
         this.players = new ArrayList<Player>(2);
-        
         // create the playing field
         this.mMacroField = new MacroField();
         
@@ -50,16 +48,15 @@ public class UTTT extends AbstractGame {
 
         }
         
-        for(AbstractPlayer player : this.players) {
+		for (Player player : players) {
             sendSettings(player);
         }
-        
         // create the processor
         super.processor = new Processor(this.players, this.mMacroField);
     }
     
     @Override
-    public void sendSettings(AbstractPlayer player) {
+	public void sendSettings(Player player) {
         player.sendSetting("timebank", TIMEBANK_MAX);
         player.sendSetting("time_per_move", TIME_PER_MOVE);
         player.sendSetting("player_names", this.players.get(0).getName() + "," + this.players.get(1).getName());
@@ -79,9 +76,9 @@ public class UTTT extends AbstractGame {
         UTTT game = new UTTT();
 
         // DEV_MODE settings
-        game.TEST_BOT = "java -cp /home/jim/workspace/fourinarow-starterbot-java/bin/ bot.BotStarter";
+		game.TEST_BOT = "java -cp D:\\Users\\Kenneth\\workspace\\UTTTBot\\bin com.kayblitz.uttt.BotStarter";
         game.NUM_TEST_BOTS = 2;
-		game.DEV_MODE = true;
+		game.DEV_MODE = false;
         
         game.setupEngine(args);
         game.runEngine();

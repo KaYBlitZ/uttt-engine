@@ -18,9 +18,11 @@
 
 package com.theaigames.engine;
 
-import com.theaigames.engine.io.IOPlayer;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import com.theaigames.engine.io.PlayerBot;
+import com.theaigames.uttt.GameLogic;
 /**
  * Engine class
  * 
@@ -34,13 +36,13 @@ import java.util.ArrayList;
 public class Engine {
     
     private boolean isRunning; // Boolean representing current engine running state
-    private Logic logic; // Class implementing Logic interface; handles all data
-    private ArrayList<IOPlayer> players; // ArrayList containing player handlers
+    private GameLogic logic; // Class implementing Logic interface; handles all data
+    private ArrayList<PlayerBot> players; // ArrayList containing player handlers
     
     // Engine constructor 
     public Engine() {
         this.isRunning = false;
-        this.players = new ArrayList<IOPlayer>();
+        this.players = new ArrayList<PlayerBot>();
     }
     
     /**
@@ -48,13 +50,10 @@ public class Engine {
      * @param command : command to start a bot process
      */
     public void addPlayer(String command, String idString) throws IOException {
-
         // Create new process
         Process process = Runtime.getRuntime().exec(command);
-
         // Attach IO to process
-        IOPlayer player = new IOPlayer(process, idString);
-
+        PlayerBot player = new PlayerBot(process, idString);
         // Add player
         this.players.add(player);
 
@@ -66,7 +65,7 @@ public class Engine {
      * Sets the game's logic
      * @param logic
      */
-    public void setLogic(Logic logic) {
+    public void setLogic(GameLogic logic) {
         this.logic = logic;
     }
     
@@ -81,39 +80,31 @@ public class Engine {
     /**
      * @return : A list of all the players in this game
      */
-    public ArrayList<IOPlayer> getPlayers() {
-        return this.players;
-    }
+	public ArrayList<PlayerBot> getPlayers() {
+		return this.players;
+	}
     
     /**
      * Starts the game
      */
     public void start() throws Exception {
-        
         int round = 0;
-        
         // Set engine to running
         this.isRunning = true;
-        
         // Set up game settings
         this.logic.setupGame(this.players);
 
         // Keep running
         while (this.isRunning) {
-            
             round++;
-
             // Play a round
             this.logic.playRound(round);
             
             // Check if win condition has been met
             if (this.hasEnded()) {
-                
                 System.out.println("stopping...");
-                
                 // Stop running
                 this.isRunning = false;
-                
                 // Close off everything
                 try {
                     this.logic.finish();
@@ -123,5 +114,4 @@ public class Engine {
             }
         }
     }
-    
 }

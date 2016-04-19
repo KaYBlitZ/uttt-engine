@@ -15,13 +15,11 @@
 //    For the full copyright and license information, please view the LICENSE
 //    file that was distributed with this source code.
 
-package com.theaigames.uttt;
+package com.theaigames.game;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.theaigames.game.GameHandler;
-import com.theaigames.game.player.AbstractPlayer;
 import com.theaigames.uttt.field.MacroField;
 import com.theaigames.uttt.moves.Move;
 import com.theaigames.uttt.player.Player;
@@ -55,11 +53,15 @@ public class Processor implements GameHandler {
     	 * action move t
     	 */
         for (Player player : mPlayers) {
-            player.sendUpdate("round",  mRoundNumber);
-            player.sendUpdate("move", mMoveNumber);
-			player.sendUpdate("field", mMacroField.getFieldString());
-			player.sendUpdate("macroboard", mMacroField.getMacroFieldString());
 			if (!isGameOver()) {
+				player.sendUpdate("round", mRoundNumber);
+				player.sendUpdate("move", mMoveNumber);
+				player.sendUpdate("field", mMacroField.getFieldString());
+				player.sendUpdate("macroboard", mMacroField.getMacroFieldString());
+				System.out.printf("Round %d, Move %d\n", mRoundNumber, mMoveNumber);
+				System.out.println("Field: " + mMacroField.getFieldString());
+				System.out.println("Macro: " + mMacroField.getMacroFieldString());
+
                 String response = player.requestMove("move");
                 Move move = new Move(player);
 				if (parseResponse(response, player)) { // successful move
@@ -104,13 +106,12 @@ public class Processor implements GameHandler {
                         }
                     }
                 }
-                
-				player.sendUpdate("field", mMacroField.getFieldString());
-				player.sendUpdate("macroboard", mMacroField.getMacroFieldString());
 				mMoveNumber++;
-            }
+			}
         }
         mRoundNumber++; // round increases after both players play
+		if (isGameOver())
+			System.out.println("The winner is player " + mMacroField.getWinner());
     }
     
     /**
@@ -124,6 +125,8 @@ public class Processor implements GameHandler {
             int column = Integer.parseInt(parts[1]);
 			int row = Integer.parseInt(parts[2]);
 			if (mMacroField.addMarker(column, row, player.getId())) {
+				System.out.printf("%d plays (%d %d). Next macro: %d\n", player.getId(), column, row,
+						mMacroField.getNextMacroIndex());
                 return true;
             }
         }
@@ -137,7 +140,7 @@ public class Processor implements GameHandler {
     }
 
     @Override
-    public AbstractPlayer getWinner() {
+	public Player getWinner() {
         if (mGameOverByPlayerErrorPlayerId > 0) { /* Game over due to too many player errors. Look up the other player, which became the winner */
             for (Player player : mPlayers) {
                 if (player.getId() != mGameOverByPlayerErrorPlayerId) {

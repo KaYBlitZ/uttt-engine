@@ -40,7 +40,8 @@ public class MacroField { // represents the entire field
     public String mLastError = "";
 	private int mLastColumn, mLastRow;
     private String mWinType = "None";
-	private int mWinner; // 0 is tie, -1 means game is still ongoing
+	private int mWinner = -1; // 0 is tie, -1 means game is still ongoing
+	private int nextMacroIndex;
 
     public MacroField() {
 		mField = new int[FIELD_COLUMNS * FIELD_ROWS];
@@ -102,7 +103,7 @@ public class MacroField { // represents the entire field
 	    	if (mField[fieldIndex] == FIELD_PLAYABLE) {
 	    		mField[fieldIndex] = marker;
 	    		// determine next macro field
-	    		updateMacro(macroIndex);
+				updateMacro(column, row);
 	    		checkWinner();
 				return true;
 	        } else {
@@ -145,13 +146,44 @@ public class MacroField { // represents the entire field
 		return -1;
 	}
 	
-	public void updateMacro(int nextMacroIndex) {
+	public void updateMacro(int column, int row) {
+		// find next macro index
+		// shift indices to 3 x 3 board
+		while (column > 2)
+			column -= 3;
+		while (row > 2)
+			row -= 3;
+		nextMacroIndex = -1;
+		if (column == 0 && row == 0) {
+			nextMacroIndex = 0;
+		} else if (column == 1 && row == 0) {
+			nextMacroIndex = 1;
+		} else if (column == 2 && row == 0) {
+			nextMacroIndex = 2;
+		} else if (column == 0 && row == 1) {
+			nextMacroIndex = 3;
+		} else if (column == 1 && row == 1) {
+			nextMacroIndex = 4;
+		} else if (column == 2 && row == 1) {
+			nextMacroIndex = 5;
+		} else if (column == 0 && row == 2) {
+			nextMacroIndex = 6;
+		} else if (column == 1 && row == 2) {
+			nextMacroIndex = 7;
+		} else if (column == 2 && row == 2) {
+			nextMacroIndex = 8;
+		}
+
+		// whether the next board is finished or not
+		boolean nextMiniOpen = getMiniWinner(nextMacroIndex) == MACRO_PLAYABLE;
 		for (int i = 0; i < mMacro.length; i++) {
 			int winner = getMiniWinner(i);
-			if (winner >= 0) { // winner, tie, or unplayable
+			if (winner >= 0) { // winner, tie
 				mMacro[i] = winner;
 			} else { // open mini TTT, need to check if playable or not
-				if (i == nextMacroIndex) {
+				if (!nextMiniOpen || i == nextMacroIndex) {
+					// if next board is finished all open boards are playable
+					// else set playable only if its the nextMacroIndex
 					mMacro[i] = MACRO_PLAYABLE;
 				} else {
 					mMacro[i] = MACRO_UNPLAYABLE;
@@ -203,7 +235,7 @@ public class MacroField { // represents the entire field
 	 */
 	private int getMiniWinner(int macroIndex) {
 		if (macroIndex < 0 && macroIndex >= MACRO_ROWS * MACRO_COLUMNS) {
-			throw new RuntimeException("Invalid macro index in getTTTWinner");
+			throw new RuntimeException("Invalid macro index in getMiniWinner");
 		}
 		
 		int[][] board = new int[3][3]; // small tic tac toe board
@@ -344,4 +376,8 @@ public class MacroField { // represents the entire field
     public String getWinType() {
         return mWinType;
     }
+
+	public int getNextMacroIndex() {
+		return nextMacroIndex;
+	}
 }

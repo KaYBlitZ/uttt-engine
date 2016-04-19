@@ -17,16 +17,59 @@
 
 package com.theaigames.uttt.moves;
 
-import com.theaigames.game.moves.AbstractMove;
-import com.theaigames.game.player.AbstractPlayer;
+import com.theaigames.uttt.player.Player;
 
-public class Move extends AbstractMove {
+public class Move {
 
 	private String mField;
 	private int mColumn, mRow;
+	private Player player; // player that did this move
+	private String illegalMove; // gets the value of the error message if move
+								// is illegal, else remains empty
     
-    public Move(AbstractPlayer player) {
-        super(player);
+	public Move(Player player) {
+		this.player = player;
+		this.illegalMove = "";
+	}
+
+	/**
+	 * @param player
+	 *            : Sets the name of the Player that this Move belongs to
+	 */
+	public void setPlayer(Player player) {
+		this.player = player;
+	}
+
+	/**
+	 * @param illegalMove
+	 *            : Sets the error message of this move. Only set this if the
+	 *            Move is illegal.
+	 */
+	public void setIllegalMove(String illegalMove) {
+		this.illegalMove = illegalMove;
+	}
+
+	/**
+	 * @return : The player that this Move belongs to
+	 */
+	public Player getPlayer() {
+		return this.player;
+	}
+
+	/**
+	 * @return : True if this Move is illegal
+	 */
+	public boolean isIllegal() {
+		if (this.illegalMove.isEmpty())
+			return false;
+		return true;
+	}
+
+	/**
+	 * @return : The error message of this Move
+	 */
+	public String getIllegalMove() {
+		return illegalMove;
     }
     
     /**
