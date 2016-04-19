@@ -17,8 +17,6 @@
 
 package com.theaigames.game;
 
-import com.theaigames.uttt.player.Player;
-
 /**
  * GameHandler interface
  * 
@@ -32,7 +30,7 @@ import com.theaigames.uttt.player.Player;
 public interface GameHandler {
     public void playRound(int roundNumber); // play one round of the game
     public int getRoundNumber(); // return the current round number
-	public Player getWinner(); // return the winner of the game, null if no winner yet
+	public int getWinner(); // return the winner of the game, -1 if no winner yet
     public boolean isGameOver(); // returns true if the game is over
     public String getPlayedGame(); // return the complete string of the game that can be parsed by the visualizer.
 }

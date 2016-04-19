@@ -153,26 +153,8 @@ public class MacroField { // represents the entire field
 			column -= 3;
 		while (row > 2)
 			row -= 3;
-		nextMacroIndex = -1;
-		if (column == 0 && row == 0) {
-			nextMacroIndex = 0;
-		} else if (column == 1 && row == 0) {
-			nextMacroIndex = 1;
-		} else if (column == 2 && row == 0) {
-			nextMacroIndex = 2;
-		} else if (column == 0 && row == 1) {
-			nextMacroIndex = 3;
-		} else if (column == 1 && row == 1) {
-			nextMacroIndex = 4;
-		} else if (column == 2 && row == 1) {
-			nextMacroIndex = 5;
-		} else if (column == 0 && row == 2) {
-			nextMacroIndex = 6;
-		} else if (column == 1 && row == 2) {
-			nextMacroIndex = 7;
-		} else if (column == 2 && row == 2) {
-			nextMacroIndex = 8;
-		}
+		nextMacroIndex = row * MACRO_COLUMNS;
+		nextMacroIndex += column;
 
 		// whether the next board is finished or not
 		boolean nextMiniOpen = getMiniWinner(nextMacroIndex) == MACRO_PLAYABLE;

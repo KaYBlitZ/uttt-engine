@@ -110,8 +110,9 @@ public class Processor implements GameHandler {
 			}
         }
         mRoundNumber++; // round increases after both players play
-		if (isGameOver())
-			System.out.println("The winner is player " + mMacroField.getWinner());
+		if (isGameOver()) {
+			System.out.println("The winner is player " + getWinner());
+		}
     }
     
     /**
@@ -140,23 +141,11 @@ public class Processor implements GameHandler {
     }
 
     @Override
-	public Player getWinner() {
+	public int getWinner() {
         if (mGameOverByPlayerErrorPlayerId > 0) { /* Game over due to too many player errors. Look up the other player, which became the winner */
-            for (Player player : mPlayers) {
-                if (player.getId() != mGameOverByPlayerErrorPlayerId) {
-                    return player;
-                }
-            }
+            return (mGameOverByPlayerErrorPlayerId == 1 ? 2 : 1);
         }
-		int winner = mMacroField.getWinner();
-		if (winner > 0) {
-            for (Player player : mPlayers) {
-                if (player.getId() == winner) {
-                    return player;
-                }
-            }
-        }
-		return null; // either tie or game not over
+		return mMacroField.getWinner(); // -1 for ongoing, 0 for tie, else winner
     }
 
     @Override
@@ -179,7 +168,7 @@ public class Processor implements GameHandler {
 
     @Override
     public boolean isGameOver() {
-		// -1 is game still ongoing; 0 is tied game
-		return getWinner() != null || mMacroField.getWinner() != -1;
+		// -1 is game still ongoing; 0 is tied game; else winner
+		return getWinner() != -1;
     }
 }
