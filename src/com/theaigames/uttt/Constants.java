@@ -11,4 +11,7 @@ public class Constants {
 	public static final boolean DEV_MODE = true; // turn this on for local testing
 	public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\workspace\\UTTTBot\\bin com.kayblitz.uttt.BotStarter";
 	public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\workspace\\UTTTBot\\bin com.kayblitz.uttt.BotStarter";
+	
+	public static final int WIDTH = 800;
+	public static final int HEIGHT = 600;
 }

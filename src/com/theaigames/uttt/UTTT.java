@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.theaigames.engine.Engine;
+import com.theaigames.engine.gui.GUI;
 import com.theaigames.engine.io.IOPlayer;
 import com.theaigames.game.GameHandler;
 import com.theaigames.game.Processor;
@@ -45,6 +46,8 @@ public class UTTT implements GameLogic {
 	// engine from eclipse
 	public static void main(String args[]) {
 		try {
+			GUI gui = new GUI();
+			gui.setVisible(true);
 			UTTT game = new UTTT(args);
 			game.start();
 		} catch (Exception e) {
@@ -169,7 +172,6 @@ public class UTTT implements GameLogic {
 			}
 		}
 		System.out.println("Done.");
-		System.exit(0);
 	}
 
 	/**
