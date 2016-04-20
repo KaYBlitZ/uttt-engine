@@ -26,9 +26,9 @@ package com.theaigames.game;
  * 
  * @author Jim van Eeden <jim@starapple.nl>
  */
-
+// handles actual game specific logic
 public interface GameHandler {
-    public void playRound(int roundNumber); // play one round of the game
+    public void playRound(); // play one round of the game
     public int getRoundNumber(); // return the current round number
 	public int getWinner(); // return the winner of the game, -1 if no winner yet
     public boolean isGameOver(); // returns true if the game is over

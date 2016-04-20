@@ -20,6 +20,7 @@ package com.theaigames.game;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.theaigames.uttt.Constants;
 import com.theaigames.uttt.field.MacroField;
 import com.theaigames.uttt.moves.Move;
 import com.theaigames.uttt.player.Player;
@@ -34,17 +35,12 @@ public class Processor implements GameHandler {
     public Processor(List<Player> players, MacroField field) {
         mPlayers = players;
         mMacroField = field;
-        mMoves = new ArrayList<Move>();
-        
-        /* Create first move with empty field */
-        Move move = new Move(mPlayers.get(0));
-		move.setField(mMacroField.getFieldString());
-        mMoves.add(move);
+        mMoves = new ArrayList<Move>(Constants.MAX_MOVES);
     }
 
 
     @Override
-    public void playRound(int roundNumber) {
+    public void playRound() {
     	/*
     	 * update game round i
     	 * update game move i
@@ -67,10 +63,14 @@ public class Processor implements GameHandler {
 				if (parseResponse(response, player)) { // successful move
                     move.setColumn(mMacroField.getLastColumn());
 					move.setRow(mMacroField.getLastRow());
+					move.setField(mMacroField.getFieldString());
+					move.setMacro(mMacroField.getMacroFieldString());
                     mMoves.add(move);
 				} else { // 1st try bad move
                     move.setColumn(mMacroField.getLastColumn());
 					move.setRow(mMacroField.getLastRow());
+					move.setField(mMacroField.getFieldString());
+					move.setMacro(mMacroField.getMacroFieldString());
                     move.setIllegalMove(mMacroField.getLastError() + " (first try)");
                     mMoves.add(move);
 					player.sendUpdate("field", mMacroField.getFieldString());
@@ -80,11 +80,15 @@ public class Processor implements GameHandler {
 						move = new Move(player);
                         move.setColumn(mMacroField.getLastColumn());
 						move.setRow(mMacroField.getLastRow());
+						move.setField(mMacroField.getFieldString());
+						move.setMacro(mMacroField.getMacroFieldString());
                         mMoves.add(move);
 					} else { // 2nd try bad move
 						move = new Move(player);
                         move.setColumn(mMacroField.getLastColumn());
 						move.setRow(mMacroField.getLastRow());
+						move.setField(mMacroField.getFieldString());
+						move.setMacro(mMacroField.getMacroFieldString());
                         move.setIllegalMove(mMacroField.getLastError() + " (second try)");
                         mMoves.add(move);
 						player.sendUpdate("field", mMacroField.getFieldString());
@@ -94,12 +98,16 @@ public class Processor implements GameHandler {
 							move = new Move(player);
                             move.setColumn(mMacroField.getLastColumn());
 							move.setRow(mMacroField.getLastRow());
+							move.setField(mMacroField.getFieldString());
+							move.setMacro(mMacroField.getMacroFieldString());
 							mMoves.add(move);
                         } else { /* Too many errors, other player wins */
 							// 3rd try bad move, game over
 							move = new Move(player);
                             move.setColumn(mMacroField.getLastColumn());
 							move.setRow(mMacroField.getLastRow());
+							move.setField(mMacroField.getFieldString());
+							move.setMacro(mMacroField.getMacroFieldString());
                             move.setIllegalMove(mMacroField.getLastError() + " (last try)");
                             mMoves.add(move);
                             mGameOverByPlayerErrorPlayerId = player.getId();

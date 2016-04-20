@@ -35,12 +35,12 @@ import java.io.InputStreamReader;
 public class InputStreamGobbler extends Thread {
     
     private InputStream inputStream;
-    private PlayerBot player;
+    private IOPlayer player;
     private String type;
     private StringBuffer buffer;
     private boolean finished;
 
-    InputStreamGobbler(InputStream inputStream, PlayerBot player, String type) {
+    InputStreamGobbler(InputStream inputStream, IOPlayer player, String type) {
         this.inputStream = inputStream;
         this.player = player;
         this.type = type;

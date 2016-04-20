@@ -17,9 +17,6 @@
 
 package com.theaigames.uttt;
 
-import java.util.ArrayList;
-
-import com.theaigames.engine.io.PlayerBot;
 import com.theaigames.uttt.player.Player;
 
 /**
@@ -31,14 +28,13 @@ import com.theaigames.uttt.player.Player;
  * 
  * @author Jackie Xu <jackie@starapple.nl>, Jim van Eeden <jim@starapple.nl>
  */
+// handles generic game handling stuff
 public interface GameLogic {
-    public void setupGame(ArrayList<PlayerBot> players) throws Exception; // create the players, set up the game
-
-	public void playRound(int roundNumber); // play a round
-
-	public void sendSettings(Player player); // send the game settings to given
-												// player
+	public void playRound(); // play a round
+	public void sendSettings(Player player); // send the game settings to given player
     public boolean isGameOver(); // check if the game is over
-    public void finish() throws Exception; // wrap things up
-    public void saveGame() throws Exception; // save all the game data
+    public void createPlayer(String command, int id);
+    public void finish(); // wrap things up
+    public void saveGame(); // save all the game data
+    public void start();
 }

@@ -27,7 +27,7 @@ import java.io.OutputStreamWriter;
  * 
  * @author Jackie Xu <jackie@starapple.nl>, Jim van Eeden <jim@starapple.nl>
  */
-public class PlayerBot implements Runnable {
+public class IOPlayer implements Runnable {
     
     private Process process;
     private OutputStreamWriter inputStream;
@@ -43,7 +43,7 @@ public class PlayerBot implements Runnable {
     
     public String response;
     
-    public PlayerBot(Process process, String idString) {
+    public IOPlayer(Process process, String idString) {
         this.inputStream = new OutputStreamWriter(process.getOutputStream());
         this.outputGobbler = new InputStreamGobbler(process.getInputStream(), this, "output");
         this.errorGobbler = new InputStreamGobbler(process.getErrorStream(), this, "error");

@@ -21,7 +21,9 @@ import com.theaigames.uttt.player.Player;
 
 public class Move {
 
+	// representations of field before player makes move
 	private String mField;
+	private String mMacro;
 	private int mColumn, mRow;
 	private Player player; // player that did this move
 	private String illegalMove; // gets the value of the error message if move
@@ -29,59 +31,34 @@ public class Move {
     
 	public Move(Player player) {
 		this.player = player;
-		this.illegalMove = "";
 	}
 
-	/**
-	 * @param player
-	 *            : Sets the name of the Player that this Move belongs to
-	 */
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
-
-	/**
-	 * @param illegalMove
-	 *            : Sets the error message of this move. Only set this if the
-	 *            Move is illegal.
-	 */
+	
 	public void setIllegalMove(String illegalMove) {
 		this.illegalMove = illegalMove;
 	}
-
-	/**
-	 * @return : The player that this Move belongs to
-	 */
+	
 	public Player getPlayer() {
 		return this.player;
 	}
-
-	/**
-	 * @return : True if this Move is illegal
-	 */
+	
 	public boolean isIllegal() {
-		if (this.illegalMove.isEmpty())
+		if (illegalMove == null)
 			return false;
 		return true;
 	}
-
-	/**
-	 * @return : The error message of this Move
-	 */
+	
 	public String getIllegalMove() {
 		return illegalMove;
     }
-    
-    /**
-     * @param column : Sets the column of a move
-     */
+	
     public void setColumn(int column) {
         this.mColumn = column;
     }
     
-    /**
-     * @return : Column of move
-     */
     public int getColumn() {
         return mColumn;
     }
@@ -104,5 +81,13 @@ public class Move {
 
 	public String getField() {
 		return mField;
+	}
+	
+	public void setMacro(String macro) {
+		mMacro = macro;
+	}
+	
+	public String getMacro() {
+		return mMacro;
 	}
 }

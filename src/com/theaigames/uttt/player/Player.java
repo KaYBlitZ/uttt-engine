@@ -20,22 +20,20 @@ package com.theaigames.uttt.player;
 
 import java.io.IOException;
 
-import com.theaigames.engine.io.PlayerBot;
-import com.theaigames.uttt.UTTT;
+import com.theaigames.engine.io.IOPlayer;
+import com.theaigames.uttt.Constants;
 
 public class Player {
 
 	private String name;
-	private PlayerBot bot;
+	private IOPlayer ioPlayer;
 	private long timeBank;
-	private long timePerMove;
 	private int id;
 
-	public Player(String name, PlayerBot bot, long maxTimeBank, long timePerMove, int id) {
+	public Player(String name, IOPlayer ioPlayer, int id) {
 		this.name = name;
-		this.bot = bot;
-		this.timeBank = maxTimeBank;
-		this.timePerMove = timePerMove;
+		this.ioPlayer = ioPlayer;
+		this.timeBank = Constants.TIMEBANK_MAX;
 		this.id = id;
 	}
 
@@ -47,8 +45,8 @@ public class Player {
 		return timeBank;
 	}
 
-	public PlayerBot getBot() {
-		return bot;
+	public IOPlayer getIOPlayer() {
+		return ioPlayer;
 	}
 
 	public int getId() {
@@ -61,7 +59,7 @@ public class Player {
 
 	public void updateTimeBank(long timeElapsed) {
 		this.timeBank = Math.max(this.timeBank - timeElapsed, 0);
-		this.timeBank = Math.min(this.timeBank + this.timePerMove, UTTT.TIMEBANK_MAX);
+		this.timeBank = Math.min(this.timeBank + Constants.TIME_PER_MOVE, Constants.TIMEBANK_MAX);
 	}
 
 	public void sendSetting(String type, String value) {
@@ -103,7 +101,7 @@ public class Player {
 		sendLine(String.format("action %s %d", moveType, this.timeBank));
 
 		// wait for the bot to return his response
-		String response = this.bot.getResponse(this.timeBank);
+		String response = ioPlayer.getResponse(this.timeBank);
 
 		// update the timebank
 		long timeElapsed = System.currentTimeMillis() - startTime;
@@ -119,9 +117,18 @@ public class Player {
 	 */
 	private void sendLine(String content) {
 		try {
-			this.bot.writeToBot(content);
+			ioPlayer.writeToBot(content);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	// Delegation to IOPlayer
+	public void addToDump(String dumpy) {
+		ioPlayer.addToDump(dumpy);
+	}
+	
+	public void finish() {
+		ioPlayer.finish();
 	}
 }

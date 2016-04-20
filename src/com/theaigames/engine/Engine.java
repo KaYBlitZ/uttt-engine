@@ -18,10 +18,6 @@
 
 package com.theaigames.engine;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import com.theaigames.engine.io.PlayerBot;
 import com.theaigames.uttt.GameLogic;
 /**
  * Engine class
@@ -37,28 +33,9 @@ public class Engine {
     
     private boolean isRunning; // Boolean representing current engine running state
     private GameLogic logic; // Class implementing Logic interface; handles all data
-    private ArrayList<PlayerBot> players; // ArrayList containing player handlers
     
-    // Engine constructor 
     public Engine() {
-        this.isRunning = false;
-        this.players = new ArrayList<PlayerBot>();
-    }
-    
-    /**
-     * Start up the bot process and add the player to the game
-     * @param command : command to start a bot process
-     */
-    public void addPlayer(String command, String idString) throws IOException {
-        // Create new process
-        Process process = Runtime.getRuntime().exec(command);
-        // Attach IO to process
-        PlayerBot player = new PlayerBot(process, idString);
-        // Add player
-        this.players.add(player);
-
-        // Start running
-        player.run();
+        isRunning = false;
     }
     
     /**
@@ -74,40 +51,26 @@ public class Engine {
      * @return : true if the game has ended
      */
     public boolean hasEnded() {
-        return this.logic.isGameOver();
+        return logic.isGameOver();
     }
-    
-    /**
-     * @return : A list of all the players in this game
-     */
-	public ArrayList<PlayerBot> getPlayers() {
-		return this.players;
-	}
     
     /**
      * Starts the game
      */
-    public void start() throws Exception {
-        int round = 0;
+    public void start() {
         // Set engine to running
-        this.isRunning = true;
-        // Set up game settings
-        this.logic.setupGame(this.players);
-
+        isRunning = true;
         // Keep running
-        while (this.isRunning) {
-            round++;
-            // Play a round
-            this.logic.playRound(round);
-            
+        while (isRunning) {
+            logic.playRound();
             // Check if win condition has been met
-            if (this.hasEnded()) {
-                System.out.println("stopping...");
+            if (hasEnded()) {
+                System.out.println("Engine stopping...");
                 // Stop running
-                this.isRunning = false;
+                isRunning = false;
                 // Close off everything
                 try {
-                    this.logic.finish();
+                    logic.finish();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
