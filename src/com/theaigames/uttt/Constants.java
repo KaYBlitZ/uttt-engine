@@ -13,5 +13,11 @@ public class Constants {
 	public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\workspace\\UTTTBot\\bin com.kayblitz.uttt.BotStarter";
 	
 	public static final int WIDTH = 800;
-	public static final int HEIGHT = 600;
+	public static final int HEIGHT = 800;
+	public static final int MACRO_STROKE_WIDTH = 10;
+	public static final int MINI_STROKE_WIDTH = 5;
+	public static final int MARKER_STROKE_WIDTH = 3;
+
+	public static final boolean DELAY_MOVE = true;
+	public static final int MOVE_DELAY = 1000;
 }

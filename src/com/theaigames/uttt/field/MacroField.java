@@ -21,16 +21,16 @@ public class MacroField { // represents the entire field
 	// macro is the large 3 x 3 TTT board
 	// mini is a small 3 x 3 TTT board
 	// field is the entire 9 x 9 board
-	private final int FIELD_COLUMNS = 9;
-	private final int FIELD_ROWS = 9;
-	private final int MACRO_COLUMNS = 3;
-	private final int MACRO_ROWS = 3;
-	private final int MINI_COLUMNS = 3;
-	private final int MINI_ROWS = 3;
+	public static final int FIELD_COLUMNS = 9;
+	public static final int FIELD_ROWS = 9;
+	public static final int MACRO_COLUMNS = 3;
+	public static final int MACRO_ROWS = 3;
+	public static final int MINI_COLUMNS = 3;
+	public static final int MINI_ROWS = 3;
 	
-	private final int FIELD_PLAYABLE = 0;
-	private final int MACRO_PLAYABLE = -1;
-	private final int MACRO_UNPLAYABLE = 0, MACRO_TIE = 0;
+	public static final int FIELD_PLAYABLE = 0;
+	public static final int MACRO_PLAYABLE = -1;
+	public static final int MACRO_UNPLAYABLE = 0, MACRO_TIE = 0;
     
 	/* Index 0 is the top left box and index 48 is the bottom-right.
 	 * Move from left to right, top to bottom, as indices increase.
@@ -42,6 +42,7 @@ public class MacroField { // represents the entire field
     private String mWinType = "None";
 	private int mWinner = -1; // 0 is tie, -1 means game is still ongoing
 	private int nextMacroIndex;
+	private int currentPlayerId = 1;
 
     public MacroField() {
 		mField = new int[FIELD_COLUMNS * FIELD_ROWS];
@@ -244,9 +245,9 @@ public class MacroField { // represents the entire field
 		board[0][1] = mField[bFieldIndex + FIELD_COLUMNS];
 		board[1][1] = mField[bFieldIndex + 1 + FIELD_COLUMNS];
 		board[2][1] = mField[bFieldIndex + 2 + FIELD_COLUMNS];
-		board[0][2] = mField[bFieldIndex];
-		board[1][2] = mField[bFieldIndex + 1 + FIELD_COLUMNS];
-		board[2][2] = mField[bFieldIndex + 2 + FIELD_COLUMNS];
+		board[0][2] = mField[bFieldIndex + 2 * FIELD_COLUMNS];
+		board[1][2] = mField[bFieldIndex + 1 + 2 * FIELD_COLUMNS];
+		board[2][2] = mField[bFieldIndex + 2 + 2 * FIELD_COLUMNS];
     	
 		/* Check for vertical wins */
         for (int x = 0; x < MINI_COLUMNS; x++) {
@@ -361,5 +362,23 @@ public class MacroField { // represents the entire field
 
 	public int getNextMacroIndex() {
 		return nextMacroIndex;
+	}
+
+	/* For GUI */
+
+	public int[] getMacroBoard() {
+		return mMacro;
+	}
+
+	public int[] getField() {
+		return mField;
+	}
+
+	public void setCurrentPlayerId(int id) {
+		currentPlayerId = id;
+	}
+
+	public int getCurrentPlayerId() {
+		return currentPlayerId;
 	}
 }

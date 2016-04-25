@@ -46,9 +46,9 @@ public class UTTT implements GameLogic {
 	// engine from eclipse
 	public static void main(String args[]) {
 		try {
-			GUI gui = new GUI();
-			gui.setVisible(true);
 			UTTT game = new UTTT(args);
+			GUI gui = new GUI(game);
+			gui.setVisible(true);
 			game.start();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -181,5 +181,18 @@ public class UTTT implements GameLogic {
 		// save results to file here
 		String playedGame = processor.getPlayedGame();
 		System.out.println(playedGame);
+	}
+
+	/* For GUI */
+	public int[] getMacroBoard() {
+		return mMacroField.getMacroBoard();
+	}
+
+	public int[] getField() {
+		return mMacroField.getField();
+	}
+
+	public int getCurrentPlayerId() {
+		return mMacroField.getCurrentPlayerId();
 	}
 }

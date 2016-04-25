@@ -49,6 +49,14 @@ public class Processor implements GameHandler {
     	 * action move t
     	 */
         for (Player player : mPlayers) {
+			mMacroField.setCurrentPlayerId(player.getId());
+			if (Constants.DELAY_MOVE) {
+				try {
+					Thread.sleep(Constants.MOVE_DELAY);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 			if (!isGameOver()) {
 				player.sendUpdate("round", mRoundNumber);
 				player.sendUpdate("move", mMoveNumber);
@@ -119,6 +127,9 @@ public class Processor implements GameHandler {
         }
         mRoundNumber++; // round increases after both players play
 		if (isGameOver()) {
+			System.out.println("Final State:");
+			System.out.println("Field: " + mMacroField.getFieldString());
+			System.out.println("Macro: " + mMacroField.getMacroFieldString());
 			System.out.println("The winner is player " + getWinner());
 		}
     }
