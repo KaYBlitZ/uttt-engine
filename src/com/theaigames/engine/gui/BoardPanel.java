@@ -2,33 +2,31 @@ package com.theaigames.engine.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.Timer;
 
 import com.theaigames.uttt.Constants;
 import com.theaigames.uttt.UTTT;
 import com.theaigames.uttt.field.MacroField;
+import com.theaigames.uttt.moves.Move;
 
 @SuppressWarnings("serial")
 public class BoardPanel extends JPanel {
 
 	private UTTT game;
+	// Moves used when the game is over
+	private Move selectedMove;
+	private Move lastMove;
 
 	public BoardPanel(UTTT game) {
 		this.game = game;
+		this.setPreferredSize(new Dimension(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT));
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		new Timer(1000 / 60, new ActionListener() { // refresh 60 times a second
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				repaint();
-			}
-		}).start();
 	}
 
 	@Override
@@ -38,27 +36,55 @@ public class BoardPanel extends JPanel {
 		int thirdWidth = getWidth() / 3;
 		int thirdHeight = getHeight() / 3;
 
-		// draw mini boards
-		int macro[] = game.getMacroBoard();
-		int playerId = game.getCurrentPlayerId();
-		g2.setStroke(new BasicStroke(Constants.MINI_STROKE_WIDTH));
-		drawMiniTTT(0, 0, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[0])); // top-left
-		drawMiniTTT(thirdWidth, 0, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[1])); // top
-		drawMiniTTT(thirdWidth * 2, 0, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[2])); // top-right
-		drawMiniTTT(0, thirdHeight, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[3])); // left-middle
-		drawMiniTTT(thirdWidth, thirdHeight, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[4])); // middle
-		drawMiniTTT(thirdWidth * 2, thirdHeight, thirdWidth, thirdHeight, g2,
-				getMiniBoardColor(playerId, macro[5])); // right-middle
-		drawMiniTTT(0, thirdHeight * 2, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[6])); // bottom-left
-		drawMiniTTT(thirdWidth, thirdHeight * 2, thirdWidth, thirdHeight, g2,
-				getMiniBoardColor(playerId, macro[7])); // bottom
-		drawMiniTTT(thirdWidth * 2, thirdHeight * 2, thirdWidth, thirdHeight, g2,
-				getMiniBoardColor(playerId, macro[8])); // bottom-right
+		if (!game.isGameOver()) {
+			// draw mini boards
+			int macro[] = game.getMacroBoard();
+			int playerId = game.getCurrentPlayerId();
+			g2.setStroke(new BasicStroke(Constants.MINI_STROKE_WIDTH));
+			drawMiniTTT(0, 0, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[0])); // top-left
+			drawMiniTTT(thirdWidth, 0, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[1])); // top
+			drawMiniTTT(thirdWidth * 2, 0, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[2])); // top-right
+			drawMiniTTT(0, thirdHeight, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[3])); // left-middle
+			drawMiniTTT(thirdWidth, thirdHeight, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[4])); // middle
+			drawMiniTTT(thirdWidth * 2, thirdHeight, thirdWidth, thirdHeight, g2,
+					getMiniBoardColor(playerId, macro[5])); // right-middle
+			drawMiniTTT(0, thirdHeight * 2, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[6])); // bottom-left
+			drawMiniTTT(thirdWidth, thirdHeight * 2, thirdWidth, thirdHeight, g2,
+					getMiniBoardColor(playerId, macro[7])); // bottom
+			drawMiniTTT(thirdWidth * 2, thirdHeight * 2, thirdWidth, thirdHeight, g2,
+					getMiniBoardColor(playerId, macro[8])); // bottom-right
 
-		// draw markers
-		int field[] = game.getField();
-		g2.setStroke(new BasicStroke(Constants.MARKER_STROKE_WIDTH));
-		drawMarkers(g2, field, getWidth(), getHeight());
+			// draw markers
+			int field[] = game.getField();
+			g2.setStroke(new BasicStroke(Constants.MARKER_STROKE_WIDTH));
+			drawMarkers(g2, field, getWidth(), getHeight());
+		} else {
+			if (selectedMove != null) {
+				// draw mini boards
+				int macro[] = selectedMove.getMacro();
+				// we need the next player's id to get the colors right
+				int playerId = selectedMove.getPlayerId() == 1 ? 2 : 1;
+				g2.setStroke(new BasicStroke(Constants.MINI_STROKE_WIDTH));
+				drawMiniTTT(0, 0, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[0])); // top-left
+				drawMiniTTT(thirdWidth, 0, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[1])); // top
+				drawMiniTTT(thirdWidth * 2, 0, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[2])); // top-right
+				drawMiniTTT(0, thirdHeight, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[3])); // left-middle
+				drawMiniTTT(thirdWidth, thirdHeight, thirdWidth, thirdHeight, g2,
+						getMiniBoardColor(playerId, macro[4])); // middle
+				drawMiniTTT(thirdWidth * 2, thirdHeight, thirdWidth, thirdHeight, g2,
+						getMiniBoardColor(playerId, macro[5])); // right-middle
+				drawMiniTTT(0, thirdHeight * 2, thirdWidth, thirdHeight, g2, getMiniBoardColor(playerId, macro[6])); // bottom-left
+				drawMiniTTT(thirdWidth, thirdHeight * 2, thirdWidth, thirdHeight, g2,
+						getMiniBoardColor(playerId, macro[7])); // bottom
+				drawMiniTTT(thirdWidth * 2, thirdHeight * 2, thirdWidth, thirdHeight, g2,
+						getMiniBoardColor(playerId, macro[8])); // bottom-right
+
+				// draw markers
+				int field[] = selectedMove.getField();
+				g2.setStroke(new BasicStroke(Constants.MARKER_STROKE_WIDTH));
+				drawMarkers(g2, field, getWidth(), getHeight());
+			}
+		}
 
 		g2.setColor(Color.BLACK);
 		// draw large TTT board
@@ -89,11 +115,24 @@ public class BoardPanel extends JPanel {
 		for (int i = 0; i < field.length; i++) {
 			int row = i / MacroField.FIELD_COLUMNS;
 			int col = i % MacroField.FIELD_COLUMNS;
+			float x = col * ninthWidth;
+			float y = row * ninthHeight;
+			// draw pink box to show move made
+			g.setColor(Color.GRAY);
+			if (game.isGameOver() && selectedMove != null) {
+				if (selectedMove.getRow() == row && selectedMove.getColumn() == col) {
+					g.fillRect((int) x, (int) y, (int) ninthWidth, (int) ninthHeight);
+				}
+			} else {
+				Move move = getLastMove();
+				if (move.getRow() == row && move.getColumn() == col) {
+					g.fillRect((int) x, (int) y, (int) ninthWidth, (int) ninthHeight);
+				}
+			}
+
 			g.setColor(getPlayerColor(field[i]));
 
 			if (field[i] == 1) { // draw x
-				float x = col * ninthWidth;
-				float y = row * ninthHeight;
 				g.drawLine((int) (x + offset), (int) (y + offset), (int) (x + ninthWidth - offset),
 						(int) (y + ninthHeight - offset));
 				g.drawLine((int) (x + offset), (int) (y + ninthHeight - offset), (int) (x + ninthWidth - offset),
@@ -107,7 +146,11 @@ public class BoardPanel extends JPanel {
 
 	public Color getMiniBoardColor(int playerId, int macroValue) {
 		if (macroValue == MacroField.MACRO_PLAYABLE) {
-			if (game.isGameOver()) {
+			if ((game.isGameOver() && selectedMove == null) || (selectedMove != null && selectedMove == lastMove)) {
+				// First case is for when game just ended. We need to show
+				// playable fields as open, not the other player's color.
+				// Second case is for when game has ended and we are checking
+				// the last move made in the list.
 				// game is over show as open
 				return Color.ORANGE;
 			}
@@ -121,5 +164,28 @@ public class BoardPanel extends JPanel {
 
 	public Color getPlayerColor(int playerId) {
 		return playerId == 1 ? Color.RED : Color.BLUE;
+	}
+
+	public void changeState(Move move) {
+		selectedMove = move;
+	}
+
+	/**
+	 * Gets the last move while the game is currently running
+	 * 
+	 * @return
+	 */
+	private Move getLastMove() {
+		List<Move> moves = game.getMoves();
+		return moves.get(moves.size() - 1);
+	}
+
+	/**
+	 * Sets the last move after the game is finished
+	 * 
+	 * @param lastMove
+	 */
+	public void setLastMove(Move lastMove) {
+		this.lastMove = lastMove;
 	}
 }

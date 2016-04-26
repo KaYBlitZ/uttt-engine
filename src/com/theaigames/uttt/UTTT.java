@@ -27,6 +27,7 @@ import com.theaigames.engine.io.IOPlayer;
 import com.theaigames.game.GameHandler;
 import com.theaigames.game.Processor;
 import com.theaigames.uttt.field.MacroField;
+import com.theaigames.uttt.moves.Move;
 import com.theaigames.uttt.player.Player;
 
 /**
@@ -49,6 +50,7 @@ public class UTTT implements GameLogic {
 			UTTT game = new UTTT(args);
 			GUI gui = new GUI(game);
 			gui.setVisible(true);
+			game.setGUI(gui);
 			game.start();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -59,13 +61,11 @@ public class UTTT implements GameLogic {
 	public GameHandler processor; // handles data
 	private List<Player> players;
 	private MacroField mMacroField;
+	private GUI gui;
 
 	public UTTT(String args[]) throws Exception {
 		players = new ArrayList<Player>(Constants.MAX_PLAYERS);
-		mMacroField = new MacroField();
-		processor = new Processor(players, mMacroField);
-		engine = new Engine();
-
+		// add players
 		if (Constants.DEV_MODE) {
 			if (Constants.TEST_BOT_1 == null || Constants.TEST_BOT_1.isEmpty() || Constants.TEST_BOT_2 == null
 					|| Constants.TEST_BOT_2.isEmpty()) {
@@ -73,8 +73,6 @@ public class UTTT implements GameLogic {
 			}
 			createPlayer(Constants.TEST_BOT_1, 1);
 			createPlayer(Constants.TEST_BOT_2, 2);
-
-			return;
 		} else {
 			// add the bots from the arguments if not in DEV_MODE
 			if (args.length < 2) {
@@ -85,6 +83,10 @@ public class UTTT implements GameLogic {
 			createPlayer(args[0], 1);
 			createPlayer(args[1], 2);
 		}
+
+		mMacroField = new MacroField();
+		processor = new Processor(players, mMacroField);
+		engine = new Engine();
 	}
 
 	@Override
@@ -140,6 +142,8 @@ public class UTTT implements GameLogic {
 
 	@Override
 	public void start() {
+		if (gui == null)
+			throw new RuntimeException("Call setGUI in UTTT before starting.");
 		engine.setLogic(this);
 		engine.start();
 		for (Player player : players) {
@@ -172,6 +176,7 @@ public class UTTT implements GameLogic {
 			}
 		}
 		System.out.println("Done.");
+		gui.finishGame();
 	}
 
 	/**
@@ -184,6 +189,10 @@ public class UTTT implements GameLogic {
 	}
 
 	/* For GUI */
+	public void setGUI(GUI gui) {
+		this.gui = gui;
+	}
+
 	public int[] getMacroBoard() {
 		return mMacroField.getMacroBoard();
 	}
@@ -194,5 +203,9 @@ public class UTTT implements GameLogic {
 
 	public int getCurrentPlayerId() {
 		return mMacroField.getCurrentPlayerId();
+	}
+
+	public List<Move> getMoves() {
+		return processor.getMoves();
 	}
 }

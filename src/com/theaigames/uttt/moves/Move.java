@@ -21,9 +21,9 @@ import com.theaigames.uttt.player.Player;
 
 public class Move {
 
-	// representations of field before player makes move
-	private String mField;
-	private String mMacro;
+	// representations of field after player makes move
+	private int[] mField;
+	private int[] mMacro;
 	private int mColumn, mRow;
 	private Player player; // player that did this move
 	private String illegalMove; // gets the value of the error message if move
@@ -75,19 +75,21 @@ public class Move {
 		return getPlayer().getId();
 	}
 
-	public void setField(String field) {
-		mField = field;
+	public void setField(int[] field) {
+		mField = new int[field.length];
+		System.arraycopy(field, 0, mField, 0, field.length);
 	}
 
-	public String getField() {
+	public int[] getField() {
 		return mField;
 	}
-	
-	public void setMacro(String macro) {
-		mMacro = macro;
+
+	public void setMacro(int[] macro) {
+		mMacro = new int[macro.length];
+		System.arraycopy(macro, 0, mMacro, 0, macro.length);
 	}
-	
-	public String getMacro() {
+
+	public int[] getMacro() {
 		return mMacro;
 	}
 }

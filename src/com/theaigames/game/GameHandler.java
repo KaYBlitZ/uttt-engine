@@ -17,6 +17,10 @@
 
 package com.theaigames.game;
 
+import java.util.List;
+
+import com.theaigames.uttt.moves.Move;
+
 /**
  * GameHandler interface
  * 
@@ -33,4 +37,5 @@ public interface GameHandler {
 	public int getWinner(); // return the winner of the game, -1 if no winner yet
     public boolean isGameOver(); // returns true if the game is over
     public String getPlayedGame(); // return the complete string of the game that can be parsed by the visualizer.
+	public List<Move> getMoves();
 }
