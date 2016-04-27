@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.theaigames.engine.Engine;
-import com.theaigames.engine.gui.GUI;
 import com.theaigames.engine.io.IOPlayer;
 import com.theaigames.game.GameHandler;
 import com.theaigames.game.Processor;
+import com.theaigames.gui.GUI;
 import com.theaigames.uttt.field.MacroField;
 import com.theaigames.uttt.moves.Move;
 import com.theaigames.uttt.player.Player;

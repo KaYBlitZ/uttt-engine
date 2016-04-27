@@ -1,4 +1,4 @@
-package com.theaigames.engine.gui;
+package com.theaigames.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -154,7 +154,7 @@ public class BoardPanel extends JPanel {
 				// game is over show as open
 				return Color.ORANGE;
 			}
-			return getPlayerColor(playerId);
+			return Color.GREEN;
 		} else if (macroValue == MacroField.MACRO_UNPLAYABLE) {
 			return Color.ORANGE; // tie or not playable
 		} else { // return winner's color

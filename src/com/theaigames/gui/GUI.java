@@ -1,4 +1,4 @@
-package com.theaigames.engine.gui;
+package com.theaigames.gui;
 
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;

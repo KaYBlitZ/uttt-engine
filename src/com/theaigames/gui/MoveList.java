@@ -1,4 +1,4 @@
-package com.theaigames.engine.gui;
+package com.theaigames.gui;
 
 import java.awt.Dimension;
 import java.util.List;
