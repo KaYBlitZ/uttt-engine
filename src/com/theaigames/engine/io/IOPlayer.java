@@ -20,6 +20,8 @@ package com.theaigames.engine.io;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
+import com.theaigames.uttt.Constants;
+
 /**
  * IOPlayer class
  * 
@@ -90,7 +92,7 @@ public class IOPlayer implements Runnable {
             long timeNow = System.currentTimeMillis();
             long timeElapsed = timeNow - timeStart;
             
-            if(timeElapsed >= timeOut) {
+            if(!Constants.DISABLE_TIMEBANK && timeElapsed >= timeOut) {
                 addToDump(String.format("Response timed out (%dms), let your bot return '%s' instead of nothing or make it faster.", timeOut, this.NULL_MOVE));
                 this.errorCounter++;
                 if (this.errorCounter > this.MAX_ERRORS) {

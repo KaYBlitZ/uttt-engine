@@ -12,6 +12,7 @@ import com.theaigames.uttt.UTTT;
 
 public class GUI extends JFrame {
 	private UTTT game;
+	private MoveErrorText errorText;
 	private BoardPanel boardPanel;
 	private MoveList moveList;
 
@@ -22,8 +23,10 @@ public class GUI extends JFrame {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null); // centers screen
 		setLayout(new FlowLayout());
-		boardPanel = new BoardPanel(game);
-		moveList = new MoveList(game.getMoves(), boardPanel);
+		errorText = new MoveErrorText();
+		boardPanel = new BoardPanel(game, errorText);
+		moveList = new MoveList(game.getMoves(), boardPanel, errorText);
+		add(errorText);
 		add(boardPanel);
 		add(moveList);
 		new Timer(1000 / Constants.FPS, new ActionListener() {

@@ -208,4 +208,19 @@ public class UTTT implements GameLogic {
 	public List<Move> getMoves() {
 		return processor.getMoves();
 	}
+	
+	/**
+	 * Sends the command "move row col" to the current bot. Should be consumed by a
+	 * player bot that outputs "place_move row col" to standard output.
+	 * @param col
+	 * @param row
+	 */
+	public void enterMove(int col, int row) {
+		Player bot = players.get(mMacroField.getCurrentPlayerId() - 1);
+		try {
+			bot.writeToBot("move " + col + " " + row);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

@@ -92,7 +92,7 @@ public class MacroField { // represents the entire field
         int fieldIndex = getFieldIndex(column, row);
         int macroIndex = getMacroIndex(column, row);
         if (fieldIndex == -1 || macroIndex == -1) {
-        	mLastError = String.format("Move out of bounds. (%d, %d)", column, row);
+        	mLastError = String.format("Move out of bounds (%d, %d)", column, row);
         	return false;
         }
         /*
@@ -108,11 +108,11 @@ public class MacroField { // represents the entire field
 	    		checkWinner();
 				return true;
 	        } else {
-				mLastError = String.format("Field not empty. (%d, %d)", column, row);
+				mLastError = String.format("Field not empty (%d, %d)", column, row);
 				return false;
 	        }
         } else {
-        	mLastError = String.format("Macro field not playable (%d).", macroIndex);
+        	mLastError = String.format("Macro field not playable (%d)", macroIndex);
         	return false;
         }
     }

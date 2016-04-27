@@ -20,10 +20,12 @@ public class MoveList extends JPanel {
 	private List<Move> moves;
 	private JList<String> list;
 	private BoardPanel boardPanel;
+	private MoveErrorText errorText;
 
-	public MoveList(List<Move> moves, BoardPanel boardPanel) {
+	public MoveList(List<Move> moves, BoardPanel boardPanel, MoveErrorText errorText) {
 		this.moves = moves;
 		this.boardPanel = boardPanel;
+		this.errorText = errorText;
 		list = new JList<String>(new DefaultListModel<String>());
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
@@ -31,7 +33,7 @@ public class MoveList extends JPanel {
 			@Override
 			public void valueChanged(ListSelectionEvent ev) {
 				int selected = ((JList<String>) ev.getSource()).getSelectedIndex();
-				boardPanel.changeState(moves.get(selected));
+				selectMove(moves.get(selected));
 			}
 		});
 		JScrollPane pane = new JScrollPane(list);
@@ -48,6 +50,15 @@ public class MoveList extends JPanel {
 		int lastIndex = moves.size() - 1;
 		list.setSelectedIndex(lastIndex);
 		boardPanel.setLastMove(moves.get(lastIndex));
-		boardPanel.changeState(moves.get(lastIndex));
+		selectMove(moves.get(lastIndex));
+	}
+	
+	public void selectMove(Move move) {
+		boardPanel.changeState(move);
+		if (move.isIllegal()) {
+			errorText.setError(move.getIllegalMove());
+		} else {
+			errorText.setError(MoveErrorText.NO_ERROR);
+		}
 	}
 }

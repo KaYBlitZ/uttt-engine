@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -19,14 +21,32 @@ import com.theaigames.uttt.moves.Move;
 public class BoardPanel extends JPanel {
 
 	private UTTT game;
+	private MoveErrorText errorText;
 	// Moves used when the game is over
 	private Move selectedMove;
 	private Move lastMove;
 
-	public BoardPanel(UTTT game) {
+	public BoardPanel(UTTT game, MoveErrorText errorText) {
 		this.game = game;
-		this.setPreferredSize(new Dimension(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT));
+		this.errorText = errorText;
+		setPreferredSize(new Dimension(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT));
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		addMouseListener(new MouseListener() {
+			@Override
+			public void mouseClicked(MouseEvent ev) {
+				int col = (int) (ev.getX() / (Constants.BOARD_WIDTH / 9f));
+				int row = (int) (ev.getY() / (Constants.BOARD_HEIGHT / 9f));
+				game.enterMove(col, row);
+			}
+			@Override
+			public void mouseEntered(MouseEvent arg0) {}
+			@Override
+			public void mouseExited(MouseEvent arg0) {}
+			@Override
+			public void mousePressed(MouseEvent arg0) {}
+			@Override
+			public void mouseReleased(MouseEvent arg0) {}
+		});
 	}
 
 	@Override
@@ -37,6 +57,14 @@ public class BoardPanel extends JPanel {
 		int thirdHeight = getHeight() / 3;
 
 		if (!game.isGameOver()) {
+			// set error text
+			Move lastMove = getLastMove();
+			if (lastMove.isIllegal()) {
+				errorText.setError(lastMove.getIllegalMove());
+			} else {
+				errorText.setError(MoveErrorText.NO_ERROR);
+			}
+			
 			// draw mini boards
 			int macro[] = game.getMacroBoard();
 			int playerId = game.getCurrentPlayerId();
@@ -177,6 +205,7 @@ public class BoardPanel extends JPanel {
 	 */
 	private Move getLastMove() {
 		List<Move> moves = game.getMoves();
+		if (moves.size() == 0) return null;
 		return moves.get(moves.size() - 1);
 	}
 

@@ -131,4 +131,8 @@ public class Player {
 	public void finish() {
 		ioPlayer.finish();
 	}
+	
+	public void writeToBot(String line) throws IOException {
+		ioPlayer.writeToBot(line);
+	}
 }
