@@ -45,10 +45,6 @@ public class Player {
 		return timeBank;
 	}
 
-	public IOPlayer getIOPlayer() {
-		return ioPlayer;
-	}
-
 	public int getId() {
 		return id;
 	}
@@ -134,5 +130,13 @@ public class Player {
 	
 	public void writeToBot(String line) throws IOException {
 		ioPlayer.writeToBot(line);
+	}
+	
+	public String getStdout() {
+		return ioPlayer.getStdout();
+	}
+	
+	public String getStderr() {
+		return ioPlayer.getStderr();
 	}
 }

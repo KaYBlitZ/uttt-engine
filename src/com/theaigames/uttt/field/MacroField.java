@@ -150,12 +150,9 @@ public class MacroField { // represents the entire field
 	public void updateMacro(int column, int row) {
 		// find next macro index
 		// shift indices to 3 x 3 board
-		while (column > 2)
-			column -= 3;
-		while (row > 2)
-			row -= 3;
-		nextMacroIndex = row * MACRO_COLUMNS;
-		nextMacroIndex += column;
+		while (column > 2) column -= 3;
+		while (row > 2) row -= 3;
+		nextMacroIndex = row * MACRO_COLUMNS + column;
 
 		// whether the next board is finished or not
 		boolean nextMiniOpen = getMiniWinner(nextMacroIndex) == MACRO_PLAYABLE;
@@ -217,13 +214,8 @@ public class MacroField { // represents the entire field
 	 * @return
 	 */
 	private int getMiniWinner(int macroIndex) {
-		if (macroIndex < 0 && macroIndex >= MACRO_ROWS * MACRO_COLUMNS) {
-			throw new RuntimeException("Invalid macro index in getMiniWinner");
-		}
-		
-		int[][] board = new int[3][3]; // small tic tac toe board
 		int bRow, bCol;
-		// determine the top-left square indices of the smaller TTT board 
+		// determine the top-left square indices of the smaller TTT board
 		if (macroIndex < 3) {
 			bRow = 0;
 		} else if (macroIndex >= 3 && macroIndex < 6) {
@@ -239,56 +231,43 @@ public class MacroField { // represents the entire field
 			bCol = 6;
 		}
 		int bFieldIndex = getFieldIndex(bCol, bRow); // the beginning square indices as field index
-		board[0][0] = mField[bFieldIndex];
-		board[1][0] = mField[bFieldIndex + 1];
-		board[2][0] = mField[bFieldIndex + 2];
-		board[0][1] = mField[bFieldIndex + FIELD_COLUMNS];
-		board[1][1] = mField[bFieldIndex + 1 + FIELD_COLUMNS];
-		board[2][1] = mField[bFieldIndex + 2 + FIELD_COLUMNS];
-		board[0][2] = mField[bFieldIndex + 2 * FIELD_COLUMNS];
-		board[1][2] = mField[bFieldIndex + 1 + 2 * FIELD_COLUMNS];
-		board[2][2] = mField[bFieldIndex + 2 + 2 * FIELD_COLUMNS];
+		int m00 = mField[bFieldIndex];
+		int m10 = mField[bFieldIndex + 1];
+		int m20 = mField[bFieldIndex + 2];
+		int m01 = mField[bFieldIndex + FIELD_COLUMNS];
+		int m11 = mField[bFieldIndex + 1 + FIELD_COLUMNS];
+		int m21 = mField[bFieldIndex + 2 + FIELD_COLUMNS];
+		int m02 = mField[bFieldIndex + 2 * FIELD_COLUMNS];
+		int m12 = mField[bFieldIndex + 1 + 2 * FIELD_COLUMNS];
+		int m22 = mField[bFieldIndex + 2 + 2 * FIELD_COLUMNS];
     	
 		/* Check for vertical wins */
-        for (int x = 0; x < MINI_COLUMNS; x++) {
-        	if (board[x][0] == 0) continue; // don't check if open square
-            if (board[x][0] == board[x][1] && board[x][1] == board[x][2]) {
-				return board[x][0];
-            }
-        }
+        if (m00 > 0 && m00 == m01 && m01 == m02) return m00;
+        if (m10 > 0 && m10 == m11 && m11 == m12) return m10;
+        if (m20 > 0 && m20 == m21 && m21 == m22) return m20;
         
 		/* Check for horizontal wins */
-		for (int y = 0; y < MINI_ROWS; y++) {
-			if (board[0][y] == 0) continue; // don't check if running or tied
-			if (board[0][y] == board[1][y] && board[1][y] == board[2][y]) {
-				return board[0][y];
-            }
-        }
+        if (m00 > 0 && m00 == m10 && m10 == m20) return m00;
+        if (m01 > 0 && m01 == m11 && m11 == m21) return m01;
+        if (m02 > 0 && m02 == m12 && m12 == m22) return m02;
         
 		/* Check for forward diagonal wins - / */
-		if (board[0][2] != 0 && // don't check if open; dont want to count opens as winner
-				board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
-			return board[0][2];
-		}
+		if (m02 > 0 && m02 == m11 && m11 == m20) return m02;
 		
 		/* Check for backward diagonal wins - \ */
-		if (board[0][0] != 0 && // don't check if open
-				board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
-			return board[0][0];
-		}
+		if (m00 > 0 && m00 == m11 && m11 == m22) return m00;
 		
 		// check if the board is full
-		for (int x = 0; x < MINI_COLUMNS; x++) {
-			for (int y = 0; y < MINI_ROWS; y++) {
-				if (board[x][y] == FIELD_PLAYABLE) // not a tie
-					return MACRO_PLAYABLE; 
-			}
+		if (m00 == FIELD_PLAYABLE || m10 == FIELD_PLAYABLE || m20 == FIELD_PLAYABLE ||
+				m01 == FIELD_PLAYABLE || m11 == FIELD_PLAYABLE || m21 == FIELD_PLAYABLE ||
+				m02 == FIELD_PLAYABLE || m12 == FIELD_PLAYABLE || m22 == FIELD_PLAYABLE) {
+			return MACRO_PLAYABLE;
 		}
 		
 		// must be a tie
         return MACRO_TIE;
 	}
-    
+	
     /**
      * Returns reason why addDisc returns false
      * @param args : 

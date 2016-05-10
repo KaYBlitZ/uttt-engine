@@ -142,13 +142,12 @@ public class UTTT implements GameLogic {
 
 	@Override
 	public void start() {
-		if (gui == null)
-			throw new RuntimeException("Call setGUI in UTTT before starting.");
-		engine.setLogic(this);
-		engine.start();
+		if (gui == null) throw new RuntimeException("Call setGUI in UTTT before starting.");
 		for (Player player : players) {
 			sendSettings(player);
 		}
+		engine.setLogic(this);
+		engine.start();
 	}
 
 	/**
@@ -168,6 +167,12 @@ public class UTTT implements GameLogic {
 		if (Constants.DEV_MODE) { // print the game file when in DEV_MODE
 			String playedGame = processor.getPlayedGame();
 			System.out.println(playedGame);
+			if (Constants.OUTPUT_BOT_ERROR) {
+				for (Player player : players) {
+					System.out.println("Player " + player.getId() + " Stderr");
+					System.out.println(player.getStderr());
+				}
+			}
 		} else { // save the game to database
 			try {
 				saveGame();
