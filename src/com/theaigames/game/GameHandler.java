@@ -38,4 +38,5 @@ public interface GameHandler {
     public boolean isGameOver(); // returns true if the game is over
     public String getPlayedGame(); // return the complete string of the game that can be parsed by the visualizer.
 	public List<Move> getMoves();
+	public void updateBatchValues();
 }

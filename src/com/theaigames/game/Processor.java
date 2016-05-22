@@ -19,13 +19,21 @@ package com.theaigames.game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.theaigames.uttt.Constants;
+import com.theaigames.uttt.UTTT;
 import com.theaigames.uttt.field.MacroField;
 import com.theaigames.uttt.moves.Move;
 import com.theaigames.uttt.player.Player;
 
 public class Processor implements GameHandler {
+	// for batch
+	public static final AtomicInteger PLAYER_ONE_WINS = new AtomicInteger();
+	public static final AtomicInteger PLAYER_TWO_WINS = new AtomicInteger();
+	public static final AtomicInteger TIES = new AtomicInteger();
+	public static final AtomicInteger TIMEOUTS = new AtomicInteger();
+	
 	private int mRoundNumber = 1, mMoveNumber = 1;
     private List<Player> mPlayers;
     private List<Move> mMoves;
@@ -73,9 +81,11 @@ public class Processor implements GameHandler {
 				player.sendUpdate("move", mMoveNumber);
 				player.sendUpdate("field", mMacroField.getFieldString());
 				player.sendUpdate("macroboard", mMacroField.getMacroFieldString());
-				System.out.printf("Round %d, Move %d\n", mRoundNumber, mMoveNumber);
-				System.out.println("Field: " + mMacroField.getFieldString());
-				System.out.println("Macro: " + mMacroField.getMacroFieldString());
+				if (!UTTT.inBatchMode) { 
+					System.out.printf("Round %d, Move %d\n", mRoundNumber, mMoveNumber);
+					System.out.println("Field: " + mMacroField.getFieldString());
+					System.out.println("Macro: " + mMacroField.getMacroFieldString());
+				}
 
                 String response = player.requestMove("move");
 				boolean success = parseResponse(response, player);
@@ -126,7 +136,7 @@ public class Processor implements GameHandler {
 			}
         }
         mRoundNumber++; // round increases after both players play
-		if (isGameOver()) {
+		if (isGameOver() && !UTTT.inBatchMode) {
 			System.out.println("Final State:");
 			System.out.println("Field: " + mMacroField.getFieldString());
 			System.out.println("Macro: " + mMacroField.getMacroFieldString());
@@ -145,8 +155,10 @@ public class Processor implements GameHandler {
             int column = Integer.parseInt(parts[1]);
 			int row = Integer.parseInt(parts[2]);
 			if (mMacroField.addMarker(column, row, player.getId())) {
-				System.out.printf("%d plays (%d %d). Next macro: %d\n", player.getId(), column, row,
-						mMacroField.getNextMacroIndex());
+				if (!UTTT.inBatchMode) { 
+					System.out.printf("%d plays (%d %d). Next macro: %d\n", player.getId(), column, row,
+							mMacroField.getNextMacroIndex());
+				}
                 return true;
             }
         }
@@ -190,5 +202,24 @@ public class Processor implements GameHandler {
     public boolean isGameOver() {
 		// -1 is game still ongoing; 0 is tied game; else winner
 		return getWinner() != -1;
+    }
+    
+    public void updateBatchValues() {
+    	if (mGameOverByPlayerErrorPlayerId > 0) { /* Game over due to too many player errors. Look up the other player, which became the winner */
+    		TIMEOUTS.incrementAndGet();
+    	}
+    	int winner = getWinner();
+    	if (winner == 1) {
+    		PLAYER_ONE_WINS.incrementAndGet();
+        } else if (winner == 2) {
+        	PLAYER_TWO_WINS.incrementAndGet();
+        } else {
+        	TIES.incrementAndGet();
+        }
+    }
+    
+    public static void displayBatchValues() {
+    	System.out.printf("P1 %d : P2 %d : Ties %d : Timeouts %d\n", PLAYER_ONE_WINS.get(), PLAYER_TWO_WINS.get(),
+    			TIES.get(), TIMEOUTS.get());
     }
 }

@@ -20,6 +20,7 @@ package com.theaigames.uttt;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.theaigames.engine.Engine;
 import com.theaigames.engine.io.IOPlayer;
@@ -42,16 +43,86 @@ import com.theaigames.uttt.player.Player;
  */
 
 public class UTTT implements GameLogic {
-
+	
+	public static boolean inBatchMode = false;
+	public static final AtomicInteger NUM_GAMES_RUNNING = new AtomicInteger();
+	
+	private static class GameThread extends Thread {
+		private String args[];
+		
+		public GameThread(String args[]) {
+			this.args = args;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				UTTT game = new UTTT(args);
+				game.start();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	// DEV_MODE can be turned on to easily test the
 	// engine from eclipse
-	public static void main(String args[]) {
+	public static void main(final String args[]) {
 		try {
-			UTTT game = new UTTT(args);
-			GUI gui = new GUI(game);
-			gui.setVisible(true);
-			game.setGUI(gui);
-			game.start();
+			if (Constants.DEV_MODE) {
+				if (Constants.DEV_BATCH_MODE) {
+					inBatchMode = true;
+					for (int i = 0; i < Constants.DEV_BATCH_NUM_TRIALS; i++) {
+						while (NUM_GAMES_RUNNING.get() >= Constants.DEV_BATCH_NUM_CONCURRENT_GAMES) Thread.sleep(500);
+						NUM_GAMES_RUNNING.incrementAndGet();
+						System.out.println("Game " + i);
+						new GameThread(args).start();
+					}
+					while (NUM_GAMES_RUNNING.get() > 0) Thread.sleep(1000);
+					Processor.displayBatchValues();
+				} else {
+					UTTT game = new UTTT(args);
+					GUI gui = new GUI(game);
+					gui.setVisible(true);
+					game.setGUI(gui);
+					game.start();
+				}
+			} else { // command line
+				if (args.length < 2) {
+					System.err.println("Usage: UTTT bot1 bot2 [# of trials] [# concurrent games]");
+					return;
+				}
+				boolean isBatch = false;
+				if (args.length >= 3) isBatch = true;
+				int trials = -1;
+				int numConcurrentGames = 1;
+				try {
+					if (isBatch) {
+						trials = Integer.parseInt(args[2]);
+						if (args.length >= 4) numConcurrentGames = Integer.parseInt(args[3]);
+					}
+				} catch (NumberFormatException e) {
+					System.err.println("Invalid 3rd arg [# trials] or 4th arg [# concurrent games]");
+					return;
+				}
+				if (isBatch) {
+					inBatchMode = true;
+					for (int i = 0; i < trials; i++) {
+						while (NUM_GAMES_RUNNING.get() >= numConcurrentGames) Thread.sleep(500);
+						NUM_GAMES_RUNNING.incrementAndGet();
+						System.out.println("Game " + i);
+						new GameThread(args).start();
+					}
+					while (NUM_GAMES_RUNNING.get() > 0) Thread.sleep(1000);
+					Processor.displayBatchValues();
+				} else {
+					UTTT game = new UTTT(args);
+					GUI gui = new GUI(game);
+					gui.setVisible(true);
+					game.setGUI(gui);
+					game.start();
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -135,14 +206,13 @@ public class UTTT implements GameLogic {
 	 */
 	@Override
 	public void playRound() {
-		for (Player player : players)
-			player.addToDump("Round " + processor.getRoundNumber());
+		for (Player player : players) player.addToDump("Round " + processor.getRoundNumber());
 		processor.playRound();
 	}
 
 	@Override
 	public void start() {
-		if (gui == null) throw new RuntimeException("Call setGUI in UTTT before starting.");
+		if (!inBatchMode && gui == null) throw new RuntimeException("Not in batch mode: Please set GUI in UTTT before starting.");
 		for (Player player : players) {
 			sendSettings(player);
 		}
@@ -167,7 +237,7 @@ public class UTTT implements GameLogic {
 		if (Constants.DEV_MODE) { // print the game file when in DEV_MODE
 			String playedGame = processor.getPlayedGame();
 			System.out.println(playedGame);
-			if (Constants.OUTPUT_BOT_ERROR) {
+			if (Constants.OUTPUT_BOT_ERROR && !UTTT.inBatchMode) {
 				for (Player player : players) {
 					System.out.println("Player " + player.getId() + " Stderr");
 					System.out.println(player.getStderr());
@@ -181,7 +251,12 @@ public class UTTT implements GameLogic {
 			}
 		}
 		System.out.println("Done.");
-		gui.finishGame();
+		if (inBatchMode) {
+			processor.updateBatchValues();
+			NUM_GAMES_RUNNING.decrementAndGet();
+		} else {
+			gui.finishGame();
+		}
 	}
 
 	/**
