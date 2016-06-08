@@ -44,7 +44,6 @@ import com.theaigames.uttt.player.Player;
 
 public class UTTT implements GameLogic {
 	
-	public static boolean inBatchMode = false;
 	public static final AtomicInteger NUM_GAMES_RUNNING = new AtomicInteger();
 	
 	private static class GameThread extends Thread {
@@ -71,14 +70,17 @@ public class UTTT implements GameLogic {
 		try {
 			if (Constants.DEV_MODE) {
 				if (Constants.DEV_BATCH_MODE) {
-					inBatchMode = true;
-					for (int i = 0; i < Constants.DEV_BATCH_NUM_TRIALS; i++) {
-						while (NUM_GAMES_RUNNING.get() >= Constants.DEV_BATCH_NUM_CONCURRENT_GAMES) Thread.sleep(500);
-						NUM_GAMES_RUNNING.incrementAndGet();
-						System.out.println("Game " + i);
-						new GameThread(args).start();
+					for (int i = 0; i < Constants.DEV_BATCH_SAMPLE_SIZE; i++) {
+						System.out.println("Sample " + i);
+						for (int j = 0; j < Constants.DEV_BATCH_NUM_GAMES; j++) {
+							while (NUM_GAMES_RUNNING.get() >= Constants.DEV_BATCH_NUM_CONCURRENT_GAMES) Thread.sleep(500);
+							NUM_GAMES_RUNNING.incrementAndGet();
+							System.out.println("Game " + j);
+							new GameThread(args).start();
+						}
+						while (NUM_GAMES_RUNNING.get() > 0) Thread.sleep(1000);
+						Processor.finishCurrentSample();
 					}
-					while (NUM_GAMES_RUNNING.get() > 0) Thread.sleep(1000);
 					Processor.displayBatchValues();
 				} else {
 					UTTT game = new UTTT(args);
@@ -89,31 +91,37 @@ public class UTTT implements GameLogic {
 				}
 			} else { // command line
 				if (args.length < 2) {
-					System.err.println("Usage: UTTT bot1 bot2 [# of trials] [# concurrent games]");
+					System.err.println("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
 					return;
 				}
 				boolean isBatch = false;
 				if (args.length >= 3) isBatch = true;
-				int trials = -1;
+				int sampleSize = -1;
+				int gamesPerSample = -1;
 				int numConcurrentGames = 1;
 				try {
 					if (isBatch) {
-						trials = Integer.parseInt(args[2]);
-						if (args.length >= 4) numConcurrentGames = Integer.parseInt(args[3]);
+						sampleSize = Integer.parseInt(args[2]);
+						gamesPerSample = Integer.parseInt(args[3]);
+						if (args.length >= 5) numConcurrentGames = Integer.parseInt(args[4]);
 					}
 				} catch (NumberFormatException e) {
-					System.err.println("Invalid 3rd arg [# trials] or 4th arg [# concurrent games]");
+					System.err.println("Invalid 3rd, 4th, or 5th arg");
+					System.err.println("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
 					return;
 				}
 				if (isBatch) {
-					inBatchMode = true;
-					for (int i = 0; i < trials; i++) {
-						while (NUM_GAMES_RUNNING.get() >= numConcurrentGames) Thread.sleep(500);
-						NUM_GAMES_RUNNING.incrementAndGet();
-						System.out.println("Game " + i);
-						new GameThread(args).start();
+					for (int i = 0; i < Constants.DEV_BATCH_SAMPLE_SIZE; i++) {
+						System.out.println("Sample " + i);
+						for (int j = 0; j < Constants.DEV_BATCH_NUM_GAMES; j++) {
+							while (NUM_GAMES_RUNNING.get() >= Constants.DEV_BATCH_NUM_CONCURRENT_GAMES) Thread.sleep(500);
+							NUM_GAMES_RUNNING.incrementAndGet();
+							System.out.println("Game " + j);
+							new GameThread(args).start();
+						}
+						while (NUM_GAMES_RUNNING.get() > 0) Thread.sleep(1000);
+						Processor.finishCurrentSample();
 					}
-					while (NUM_GAMES_RUNNING.get() > 0) Thread.sleep(1000);
 					Processor.displayBatchValues();
 				} else {
 					UTTT game = new UTTT(args);
@@ -212,7 +220,7 @@ public class UTTT implements GameLogic {
 
 	@Override
 	public void start() {
-		if (!inBatchMode && gui == null) throw new RuntimeException("Not in batch mode: Please set GUI in UTTT before starting.");
+		if (!Constants.DEV_BATCH_MODE && gui == null) throw new RuntimeException("Not in batch mode: Please set GUI in UTTT before starting.");
 		for (Player player : players) {
 			sendSettings(player);
 		}
@@ -237,7 +245,7 @@ public class UTTT implements GameLogic {
 		if (Constants.DEV_MODE) { // print the game file when in DEV_MODE
 			String playedGame = processor.getPlayedGame();
 			System.out.println(playedGame);
-			if (Constants.OUTPUT_BOT_ERROR && !UTTT.inBatchMode) {
+			if (Constants.OUTPUT_BOT_ERROR && !Constants.DEV_BATCH_MODE) {
 				for (Player player : players) {
 					System.out.println("Player " + player.getId() + " Stderr");
 					System.out.println(player.getStderr());
@@ -251,8 +259,8 @@ public class UTTT implements GameLogic {
 			}
 		}
 		System.out.println("Done.");
-		if (inBatchMode) {
-			processor.updateBatchValues();
+		if (Constants.DEV_BATCH_MODE) {
+			processor.updateCurrentSampleValues();
 			NUM_GAMES_RUNNING.decrementAndGet();
 		} else {
 			gui.finishGame();

@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.theaigames.uttt.Constants;
-import com.theaigames.uttt.UTTT;
 import com.theaigames.uttt.field.MacroField;
 import com.theaigames.uttt.moves.Move;
 import com.theaigames.uttt.player.Player;
@@ -33,6 +32,11 @@ public class Processor implements GameHandler {
 	public static final AtomicInteger PLAYER_TWO_WINS = new AtomicInteger();
 	public static final AtomicInteger TIES = new AtomicInteger();
 	public static final AtomicInteger TIMEOUTS = new AtomicInteger();
+	
+	private static ArrayList<Integer> sampleP1Wins = new ArrayList<Integer>(Constants.DEV_BATCH_SAMPLE_SIZE);
+	private static ArrayList<Integer> sampleP2Wins = new ArrayList<Integer>(Constants.DEV_BATCH_SAMPLE_SIZE);
+	private static ArrayList<Integer> sampleTies = new ArrayList<Integer>(Constants.DEV_BATCH_SAMPLE_SIZE);
+	private static ArrayList<Integer> sampleTimeouts = new ArrayList<Integer>(Constants.DEV_BATCH_SAMPLE_SIZE);
 	
 	private int mRoundNumber = 1, mMoveNumber = 1;
     private List<Player> mPlayers;
@@ -81,7 +85,7 @@ public class Processor implements GameHandler {
 				player.sendUpdate("move", mMoveNumber);
 				player.sendUpdate("field", mMacroField.getFieldString());
 				player.sendUpdate("macroboard", mMacroField.getMacroFieldString());
-				if (!UTTT.inBatchMode) { 
+				if (!Constants.DEV_BATCH_MODE) { 
 					System.out.printf("Round %d, Move %d\n", mRoundNumber, mMoveNumber);
 					System.out.println("Field: " + mMacroField.getFieldString());
 					System.out.println("Macro: " + mMacroField.getMacroFieldString());
@@ -136,7 +140,7 @@ public class Processor implements GameHandler {
 			}
         }
         mRoundNumber++; // round increases after both players play
-		if (isGameOver() && !UTTT.inBatchMode) {
+		if (isGameOver() && !Constants.DEV_BATCH_MODE) {
 			System.out.println("Final State:");
 			System.out.println("Field: " + mMacroField.getFieldString());
 			System.out.println("Macro: " + mMacroField.getMacroFieldString());
@@ -155,7 +159,7 @@ public class Processor implements GameHandler {
             int column = Integer.parseInt(parts[1]);
 			int row = Integer.parseInt(parts[2]);
 			if (mMacroField.addMarker(column, row, player.getId())) {
-				if (!UTTT.inBatchMode) { 
+				if (!Constants.DEV_BATCH_MODE) { 
 					System.out.printf("%d plays (%d %d). Next macro: %d\n", player.getId(), column, row,
 							mMacroField.getNextMacroIndex());
 				}
@@ -204,7 +208,7 @@ public class Processor implements GameHandler {
 		return getWinner() != -1;
     }
     
-    public void updateBatchValues() {
+    public void updateCurrentSampleValues() {
     	if (mGameOverByPlayerErrorPlayerId > 0) { /* Game over due to too many player errors. Look up the other player, which became the winner */
     		TIMEOUTS.incrementAndGet();
     	}
@@ -218,8 +222,33 @@ public class Processor implements GameHandler {
         }
     }
     
+    public static void finishCurrentSample() {
+    	sampleP1Wins.add(PLAYER_ONE_WINS.get());
+    	sampleP2Wins.add(PLAYER_TWO_WINS.get());
+    	sampleTies.add(TIES.get());
+    	sampleTimeouts.add(TIMEOUTS.get());
+    	PLAYER_ONE_WINS.set(0);
+    	PLAYER_TWO_WINS.set(0);
+    	TIES.set(0);
+    	TIMEOUTS.set(0);
+    }
+    
     public static void displayBatchValues() {
-    	System.out.printf("P1 %d : P2 %d : Ties %d : Timeouts %d\n", PLAYER_ONE_WINS.get(), PLAYER_TWO_WINS.get(),
-    			TIES.get(), TIMEOUTS.get());
+    	float avgP1Wins = 0f, avgP2Wins = 0f, avgTies = 0f, avgTimeouts = 0f;
+    	
+    	System.out.println("# Samples = " + Constants.DEV_BATCH_SAMPLE_SIZE + ", # Games per Sample = " + Constants.DEV_BATCH_NUM_GAMES);
+    	System.out.println("Sample #, P1 Wins, P2 Wins, Ties, Timeouts");
+    	for (int i = 0; i < Constants.DEV_BATCH_SAMPLE_SIZE; i++) {
+    		avgP1Wins += sampleP1Wins.get(i);
+    		avgP2Wins += sampleP2Wins.get(i);
+    		avgTies += sampleTies.get(i);
+    		avgTimeouts += sampleTimeouts.get(i);
+    		System.out.printf("%d, %d, %d, %d, %d\n", i, sampleP1Wins.get(i), sampleP2Wins.get(i), sampleTies.get(i), sampleTimeouts.get(i));
+    	}
+    	avgP1Wins /= Constants.DEV_BATCH_SAMPLE_SIZE;
+    	avgP2Wins /= Constants.DEV_BATCH_SAMPLE_SIZE;
+    	avgTies /= Constants.DEV_BATCH_SAMPLE_SIZE;
+    	avgTimeouts /= Constants.DEV_BATCH_SAMPLE_SIZE;
+    	System.out.printf("Mean, %f, %f, %f, %f\n", avgP1Wins, avgP2Wins, avgTies, avgTimeouts);
     }
 }
