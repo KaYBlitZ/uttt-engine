@@ -10,21 +10,24 @@ public class Constants {
 	
 	public static final boolean DEV_MODE = true; // turn this on for local testing
 	public static final boolean DEV_BATCH_MODE = true; // turn on to run multiple games
-	public static final int DEV_BATCH_SAMPLE_SIZE = 100; // # samples
-	public static final int DEV_BATCH_NUM_GAMES = 100; // # games per sample
-	public static final int DEV_BATCH_NUM_CONCURRENT_GAMES = 5; // max # games running at any time
+	public static final int DEV_BATCH_SAMPLE_SIZE = 50; // # samples
+	public static final int DEV_BATCH_NUM_GAMES = 50; // # games per sample
+	public static final int DEV_BATCH_NUM_CONCURRENT_GAMES = 3; // max # games running at any time
 	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.RandomBot";
 	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.PlayerBot";
 	public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.AlphabetaBot 7";
+	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.IterativeDeepeningAlphabetaBot";
 	
 	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.RandomBot";
 	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.PlayerBot";
-	public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.AlphabetaBot 4";
+	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.AlphabetaBot 7";
+	public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.IterativeDeepeningAlphabetaBot";
 	
 	// set to true when using human bot to prevent timeouts
 	// set to false when using bots
 	public static final boolean DISABLE_TIMEBANK = false;
-	public static final boolean OUTPUT_BOT_ERROR = true; // disabled in batch mode
+	public static final boolean OUTPUT_BOT_1_ERROR = true; // disabled in batch mode
+	public static final boolean OUTPUT_BOT_2_ERROR = true; // disabled in batch mode
 	
 	public static final int GUI_WIDTH = 800;
 	public static final int BOARD_WIDTH = 500;

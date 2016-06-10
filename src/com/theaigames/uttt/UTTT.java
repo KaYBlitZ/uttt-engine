@@ -245,10 +245,14 @@ public class UTTT implements GameLogic {
 		if (Constants.DEV_MODE) { // print the game file when in DEV_MODE
 			String playedGame = processor.getPlayedGame();
 			System.out.println(playedGame);
-			if (Constants.OUTPUT_BOT_ERROR && !Constants.DEV_BATCH_MODE) {
-				for (Player player : players) {
-					System.out.println("Player " + player.getId() + " Stderr");
-					System.out.println(player.getStderr());
+			if (!Constants.DEV_BATCH_MODE) {
+				if (Constants.OUTPUT_BOT_1_ERROR) {
+					System.out.println("Player " + 1 + " Stderr");
+					System.out.println(players.get(0).getStderr());
+				}
+				if (Constants.OUTPUT_BOT_2_ERROR) {
+					System.out.println("Player " + 2 + " Stderr");
+					System.out.println(players.get(1).getStderr());
 				}
 			}
 		} else { // save the game to database
