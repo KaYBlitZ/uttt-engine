@@ -10,18 +10,18 @@ public class Constants {
 	
 	public static final boolean DEV_MODE = true; // turn this on for local testing
 	public static final boolean DEV_BATCH_MODE = true; // turn on to run multiple games
-	public static final int DEV_BATCH_SAMPLE_SIZE = 50; // # samples
-	public static final int DEV_BATCH_NUM_GAMES = 50; // # games per sample
+	public static final int DEV_BATCH_SAMPLE_SIZE = 1; // # samples
+	public static final int DEV_BATCH_NUM_GAMES = 1000; // # games per sample
 	public static final int DEV_BATCH_NUM_CONCURRENT_GAMES = 3; // max # games running at any time
 	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.RandomBot";
 	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.PlayerBot";
-	public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.AlphabetaBot 7";
-	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.IterativeDeepeningAlphabetaBot";
+	public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.MinimaxBot 7 1";
+	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.IterativeDeepeningMinimaxBot 0";
 	
 	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.RandomBot";
 	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.PlayerBot";
-	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.AlphabetaBot 7";
-	public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.IterativeDeepeningAlphabetaBot";
+	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.MinimaxBot 7 1";
+	public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.IterativeDeepeningMinimaxBot 0";
 	
 	// set to true when using human bot to prevent timeouts
 	// set to false when using bots
