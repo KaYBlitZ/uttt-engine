@@ -70,6 +70,7 @@ public class UTTT implements GameLogic {
 		try {
 			if (Constants.DEV_MODE) {
 				if (Constants.DEV_BATCH_MODE) {
+					long startTime = System.currentTimeMillis();
 					for (int i = 0; i < Constants.DEV_BATCH_SAMPLE_SIZE; i++) {
 						System.out.println("Sample " + i);
 						for (int j = 0; j < Constants.DEV_BATCH_NUM_GAMES; j++) {
@@ -82,6 +83,11 @@ public class UTTT implements GameLogic {
 						Processor.finishCurrentSample();
 					}
 					Processor.displayBatchValues();
+					long elapsed = (System.currentTimeMillis() - startTime) / 1000;
+					long hours = elapsed / 3600;
+					long minutes = (elapsed % 3600) / 60;
+					long seconds = (elapsed % 3600) % 60;
+					System.out.printf("Elapsed time: %d:%02d:%02d\n", hours, minutes, seconds);
 				} else {
 					UTTT game = new UTTT(args);
 					GUI gui = new GUI(game);
