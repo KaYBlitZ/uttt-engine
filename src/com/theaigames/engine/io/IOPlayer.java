@@ -20,8 +20,6 @@ package com.theaigames.engine.io;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-import com.theaigames.uttt.Constants;
-
 /**
  * IOPlayer class
  * 
@@ -37,7 +35,7 @@ public class IOPlayer implements Runnable {
     private InputStreamGobbler errorGobbler;
     private StringBuilder dump;
     private int errorCounter;
-    private boolean finished;
+    private boolean finished, disableTimebank;
     private String idString;
     
     private final int MAX_ERRORS = 2;
@@ -45,7 +43,8 @@ public class IOPlayer implements Runnable {
     
     public String response;
     
-    public IOPlayer(Process process, String idString) {
+    public IOPlayer(Process process, String idString, boolean disableTimebank) {
+    	this.disableTimebank = disableTimebank;
         this.inputStream = new OutputStreamWriter(process.getOutputStream());
         this.outputGobbler = new InputStreamGobbler(process.getInputStream(), this, "output");
         this.errorGobbler = new InputStreamGobbler(process.getErrorStream(), this, "error");
@@ -92,7 +91,7 @@ public class IOPlayer implements Runnable {
             long timeNow = System.currentTimeMillis();
             long timeElapsed = timeNow - timeStart;
             
-            if(!Constants.DISABLE_TIMEBANK && timeElapsed >= timeOut) {
+            if(!disableTimebank && timeElapsed >= timeOut) {
                 addToDump(String.format("Response timed out (%dms), let your bot return '%s' instead of nothing or make it faster.", timeOut, this.NULL_MOVE));
                 this.errorCounter++;
                 if (this.errorCounter > this.MAX_ERRORS) {

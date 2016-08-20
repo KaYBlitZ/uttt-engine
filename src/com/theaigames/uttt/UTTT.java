@@ -20,7 +20,6 @@ package com.theaigames.uttt;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.theaigames.engine.Engine;
 import com.theaigames.engine.io.IOPlayer;
@@ -44,133 +43,22 @@ import com.theaigames.uttt.player.Player;
 
 public class UTTT implements GameLogic {
 	
-	public static final AtomicInteger NUM_GAMES_RUNNING = new AtomicInteger();
-	
-	private static class GameThread extends Thread {
-		private String args[];
-		
-		public GameThread(String args[]) {
-			this.args = args;
-		}
-		
-		@Override
-		public void run() {
-			try {
-				UTTT game = new UTTT(args);
-				game.start();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	// DEV_MODE can be turned on to easily test the
-	// engine from eclipse
-	public static void main(final String args[]) {
-		try {
-			if (Constants.DEV_MODE) {
-				if (Constants.DEV_BATCH_MODE) {
-					long startTime = System.currentTimeMillis();
-					for (int i = 0; i < Constants.DEV_BATCH_SAMPLE_SIZE; i++) {
-						System.out.println("Sample " + i);
-						for (int j = 0; j < Constants.DEV_BATCH_NUM_GAMES; j++) {
-							while (NUM_GAMES_RUNNING.get() >= Constants.DEV_BATCH_NUM_CONCURRENT_GAMES) Thread.sleep(500);
-							NUM_GAMES_RUNNING.incrementAndGet();
-							System.out.println("Game " + j);
-							new GameThread(args).start();
-						}
-						while (NUM_GAMES_RUNNING.get() > 0) Thread.sleep(1000);
-						Processor.finishCurrentSample();
-					}
-					Processor.displayBatchValues();
-					long elapsed = (System.currentTimeMillis() - startTime) / 1000;
-					long hours = elapsed / 3600;
-					long minutes = (elapsed % 3600) / 60;
-					long seconds = (elapsed % 3600) % 60;
-					System.out.printf("Elapsed time: %d:%02d:%02d\n", hours, minutes, seconds);
-				} else {
-					UTTT game = new UTTT(args);
-					GUI gui = new GUI(game);
-					gui.setVisible(true);
-					game.setGUI(gui);
-					game.start();
-				}
-			} else { // command line
-				if (args.length < 2) {
-					System.err.println("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
-					return;
-				}
-				boolean isBatch = false;
-				if (args.length >= 3) isBatch = true;
-				int sampleSize = -1;
-				int gamesPerSample = -1;
-				int numConcurrentGames = 1;
-				try {
-					if (isBatch) {
-						sampleSize = Integer.parseInt(args[2]);
-						gamesPerSample = Integer.parseInt(args[3]);
-						if (args.length >= 5) numConcurrentGames = Integer.parseInt(args[4]);
-					}
-				} catch (NumberFormatException e) {
-					System.err.println("Invalid 3rd, 4th, or 5th arg");
-					System.err.println("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
-					return;
-				}
-				if (isBatch) {
-					for (int i = 0; i < Constants.DEV_BATCH_SAMPLE_SIZE; i++) {
-						System.out.println("Sample " + i);
-						for (int j = 0; j < Constants.DEV_BATCH_NUM_GAMES; j++) {
-							while (NUM_GAMES_RUNNING.get() >= Constants.DEV_BATCH_NUM_CONCURRENT_GAMES) Thread.sleep(500);
-							NUM_GAMES_RUNNING.incrementAndGet();
-							System.out.println("Game " + j);
-							new GameThread(args).start();
-						}
-						while (NUM_GAMES_RUNNING.get() > 0) Thread.sleep(1000);
-						Processor.finishCurrentSample();
-					}
-					Processor.displayBatchValues();
-				} else {
-					UTTT game = new UTTT(args);
-					GUI gui = new GUI(game);
-					gui.setVisible(true);
-					game.setGUI(gui);
-					game.start();
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
+	public UTTTStarter starter;
 	public Engine engine; // runs game
 	public GameHandler processor; // handles data
 	private List<Player> players;
 	private MacroField mMacroField;
 	private GUI gui;
 
-	public UTTT(String args[]) throws Exception {
+	public UTTT(String bot1, String bot2, UTTTStarter starter) {
+		this.starter = starter;
 		players = new ArrayList<Player>(Constants.MAX_PLAYERS);
 		// add players
-		if (Constants.DEV_MODE) {
-			if (Constants.TEST_BOT_1 == null || Constants.TEST_BOT_1.isEmpty() || Constants.TEST_BOT_2 == null
-					|| Constants.TEST_BOT_2.isEmpty()) {
-				throw new RuntimeException("DEV_MODE: Please set 'TEST_BOT_1' and 'TEST_BOT_2' in your main class.");
-			}
-			createPlayer(Constants.TEST_BOT_1, 1);
-			createPlayer(Constants.TEST_BOT_2, 2);
-		} else {
-			// add the bots from the arguments if not in DEV_MODE
-			if (args.length < 2) {
-				throw new RuntimeException("Two bot commands needed.");
-			}
-
-			// add the players
-			createPlayer(args[0], 1);
-			createPlayer(args[1], 2);
-		}
-
+		createPlayer(bot1, 1);
+		createPlayer(bot2, 2);
+		
 		mMacroField = new MacroField();
-		processor = new Processor(players, mMacroField);
+		processor = new Processor(players, mMacroField, starter);
 		engine = new Engine();
 	}
 
@@ -180,7 +68,7 @@ public class UTTT implements GameLogic {
 			// Create new process
 			Process process = Runtime.getRuntime().exec(command);
 			// Attach IO to process
-			IOPlayer ioPlayer = new IOPlayer(process, "ID_" + id);
+			IOPlayer ioPlayer = new IOPlayer(process, "ID_" + id, starter.isTimebankDisabled());
 			// Start running
 			ioPlayer.run();
 
@@ -226,7 +114,7 @@ public class UTTT implements GameLogic {
 
 	@Override
 	public void start() {
-		if (!Constants.DEV_BATCH_MODE && gui == null) throw new RuntimeException("Not in batch mode: Please set GUI in UTTT before starting.");
+		if (!starter.inBatchMode() && gui == null) throw new RuntimeException("Not in batch mode: Please set GUI in UTTT before starting.");
 		for (Player player : players) {
 			sendSettings(player);
 		}
@@ -247,33 +135,24 @@ public class UTTT implements GameLogic {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
-		if (Constants.DEV_MODE) { // print the game file when in DEV_MODE
-			String playedGame = processor.getPlayedGame();
-			System.out.println(playedGame);
-			if (!Constants.DEV_BATCH_MODE) {
-				if (Constants.OUTPUT_BOT_1_ERROR) {
-					System.out.println("Player " + 1 + " Stderr");
-					System.out.println(players.get(0).getStderr());
-				}
-				if (Constants.OUTPUT_BOT_2_ERROR) {
-					System.out.println("Player " + 2 + " Stderr");
-					System.out.println(players.get(1).getStderr());
-				}
+		
+		if (!starter.inBatchMode()) {
+			if (starter.outputBot1Error()) {
+				System.out.println("Player " + 1 + " Stderr");
+				System.out.println(players.get(0).getStderr());
 			}
-		} else { // save the game to database
-			try {
-				saveGame();
-			} catch (Exception e) {
-				e.printStackTrace();
+			if (starter.outputBot2Error()) {
+				System.out.println("Player " + 2 + " Stderr");
+				System.out.println(players.get(1).getStderr());
 			}
 		}
 		System.out.println("Done.");
-		if (Constants.DEV_BATCH_MODE) {
+		if (starter.inBatchMode()) {
 			processor.updateCurrentSampleValues();
-			NUM_GAMES_RUNNING.decrementAndGet();
+			starter.NUM_GAMES_RUNNING.decrementAndGet();
 		} else {
 			gui.finishGame();
+			starter.finish();
 		}
 	}
 
@@ -282,8 +161,6 @@ public class UTTT implements GameLogic {
 	 */
 	public void saveGame() {
 		// save results to file here
-		String playedGame = processor.getPlayedGame();
-		System.out.println(playedGame);
 	}
 
 	/* For GUI */
