@@ -8,44 +8,11 @@ import com.theaigames.gui.GUI;
 public class UTTTStarter {
 	
 	public static void main(String[] args) {
-		UTTTStarter engine = new UTTTStarter();
-		if (Constants.DEV_MODE) {
-			engine.setBots(Constants.TEST_BOT_1, Constants.TEST_BOT_2);
-			engine.setSampleSize(Constants.DEV_BATCH_SAMPLE_SIZE);
-			engine.setNumGamesPerSample(Constants.DEV_BATCH_NUM_GAMES);
-			engine.setNumConcurrentGames(Constants.DEV_BATCH_NUM_CONCURRENT_GAMES);
-			engine.disableTimebank(Constants.DISABLE_TIMEBANK);
-			engine.enableBatchMode(Constants.DEV_BATCH_MODE);
-			engine.setOutputBot1Error(Constants.OUTPUT_BOT_1_ERROR);
-			engine.setOutputBot2Error(Constants.OUTPUT_BOT_2_ERROR);
-		} else {
-			if (args.length < 2) {
-				System.err.println("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
-				return;
-			}
-			if (args.length >= 3)
-				engine.enableBatchMode(true);
-			engine.setNumConcurrentGames(1);
-			try {
-				if (engine.inBatchMode()) {
-					engine.setSampleSize(Integer.parseInt(args[2]));
-					engine.setNumGamesPerSample(Integer.parseInt(args[3]));
-					if (args.length >= 5)
-						engine.setNumConcurrentGames(Integer.parseInt(args[4]));
-				}
-			} catch (NumberFormatException e) {
-				System.err.println("Invalid 3rd, 4th, or 5th arg");
-				System.err.println("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
-				return;
-			}
-			engine.setBots(args[0], args[1]);
-		}
-		if (engine.inBatchMode())
-			engine.initBatchMode();
+		UTTTStarter engine = new UTTTStarter(args);
 		engine.start();
 	}
 	
-	private static class GameThread extends Thread {
+	private class GameThread extends Thread {
 		private String bot1, bot2;
 		private UTTTStarter starter;
 		
@@ -59,6 +26,8 @@ public class UTTTStarter {
 		public void run() {
 			try {
 				UTTT game = new UTTT(bot1, bot2, starter);
+				if (heuristics != null)
+					game.updateHeuristics(heuristics);
 				game.start();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -73,24 +42,79 @@ public class UTTTStarter {
 	public final AtomicInteger NUM_GAMES_RUNNING = new AtomicInteger();
 	private String bot1, bot2;
 	private int sampleSize = 1, numGamesPerSample = 500, numConcurrentGames = 3;
-	private boolean disableTimebank = false;
-	private boolean inBatchMode = false;
+	private boolean disableTimebank;
+	private boolean inBatchMode;
 	private boolean outputBot1Error = true, outputBot2Error = true;
-	private boolean isFinished = false;
+	private boolean isFinished, started;
 	private float avgP1Wins, avgP2Wins, avgTies, avgTimeouts;
 	
-	private void initBatchMode() {
-		PLAYER_ONE_WINS = new AtomicInteger();
-		PLAYER_TWO_WINS = new AtomicInteger();
-		TIES = new AtomicInteger();
-		TIMEOUTS = new AtomicInteger();
-		sampleP1Wins = new ArrayList<Integer>(sampleSize);
-		sampleP2Wins = new ArrayList<Integer>(sampleSize);
-		sampleTies = new ArrayList<Integer>(sampleSize);
-		sampleTimeouts = new ArrayList<Integer>(sampleSize);
+	// For CMA-ES
+	private String heuristics;
+	
+	public UTTTStarter() {
+		this(false);
+	}
+	
+	public UTTTStarter(boolean batchMode) {
+		this.inBatchMode = batchMode;
+		if (inBatchMode) {
+			PLAYER_ONE_WINS = new AtomicInteger();
+			PLAYER_TWO_WINS = new AtomicInteger();
+			TIES = new AtomicInteger();
+			TIMEOUTS = new AtomicInteger();
+			sampleP1Wins = new ArrayList<Integer>(sampleSize);
+			sampleP2Wins = new ArrayList<Integer>(sampleSize);
+			sampleTies = new ArrayList<Integer>(sampleSize);
+			sampleTimeouts = new ArrayList<Integer>(sampleSize);
+		}
+	}
+	
+	public UTTTStarter(String[] args) {
+		if (Constants.DEV_MODE) {
+			bot1 = Constants.TEST_BOT_1;
+			bot2 = Constants.TEST_BOT_2;
+			sampleSize = Constants.DEV_BATCH_SAMPLE_SIZE;
+			numGamesPerSample = Constants.DEV_BATCH_NUM_GAMES;
+			numConcurrentGames = Constants.DEV_BATCH_NUM_CONCURRENT_GAMES;
+			disableTimebank = Constants.DISABLE_TIMEBANK;
+			inBatchMode = Constants.DEV_BATCH_MODE;
+			outputBot1Error = Constants.OUTPUT_BOT_1_ERROR;
+			outputBot2Error = Constants.OUTPUT_BOT_2_ERROR;
+		} else {
+			if (args.length < 2) {
+				throw new RuntimeException("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
+			}
+			if (args.length >= 3)
+				inBatchMode = true;
+			numConcurrentGames = 1;
+			try {
+				if (inBatchMode) {
+					sampleSize = Integer.parseInt(args[2]);
+					numGamesPerSample = Integer.parseInt(args[3]);
+					if (args.length >= 5)
+						numConcurrentGames = Integer.parseInt(args[4]);
+				}
+			} catch (NumberFormatException e) {
+				System.err.println("Invalid 3rd, 4th, or 5th arg");
+				throw new RuntimeException("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
+			}
+			bot1 = args[0];
+			bot2 = args[1];
+		}
+		if (inBatchMode) {
+			PLAYER_ONE_WINS = new AtomicInteger();
+			PLAYER_TWO_WINS = new AtomicInteger();
+			TIES = new AtomicInteger();
+			TIMEOUTS = new AtomicInteger();
+			sampleP1Wins = new ArrayList<Integer>(sampleSize);
+			sampleP2Wins = new ArrayList<Integer>(sampleSize);
+			sampleTies = new ArrayList<Integer>(sampleSize);
+			sampleTimeouts = new ArrayList<Integer>(sampleSize);
+		}
 	}
 	
 	public void start() {
+		started = true;
 		if (bot1 == null || bot2 == null)
 			throw new RuntimeException("Please call UTTTEngine.setBots()");
 		try {
@@ -176,6 +200,18 @@ public class UTTTStarter {
     	System.out.printf("Mean, %f, %f, %f, %f\n", avgP1Wins, avgP2Wins, avgTies, avgTimeouts);
     }
     
+    /** Heuristics must be updated before calling start() **/
+    public void updateHeuristics(double[] heuristics) {
+    	if (started)
+    		throw new RuntimeException("Heuristics must be updated before calling start()");
+    	String s = "";
+    	for (int i = 0; i < heuristics.length - 1; i++) {
+    		s += String.valueOf(heuristics[i]) + " ";
+    	}
+    	s += String.valueOf(heuristics[heuristics.length - 1]);
+    	this.heuristics = s;
+    }
+    
     public float getAverageP1Wins() {
     	return avgP1Wins;
     }
@@ -211,10 +247,6 @@ public class UTTTStarter {
 	
 	public void disableTimebank(boolean disabled) {
 		this.disableTimebank = disabled;
-	}
-	
-	public void enableBatchMode(boolean enabled) {
-		this.inBatchMode = enabled;
 	}
 	
 	public void setOutputBot1Error(boolean enabled) {

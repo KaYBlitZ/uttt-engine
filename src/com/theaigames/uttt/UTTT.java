@@ -88,6 +88,12 @@ public class UTTT implements GameLogic {
 		player.sendSetting("your_bot", player.getName());
 		player.sendSetting("your_botid", player.getId());
 	}
+	
+	/** For CMA_ES **/
+	public void updateHeuristics(String heuristics) {
+		for (Player player : players)
+			player.updateHeuristics(heuristics);
+	}
 
 	/**
 	 * @return : True when the game is over
@@ -146,7 +152,6 @@ public class UTTT implements GameLogic {
 				System.out.println(players.get(1).getStderr());
 			}
 		}
-		System.out.println("Done.");
 		if (starter.inBatchMode()) {
 			processor.updateCurrentSampleValues();
 			starter.NUM_GAMES_RUNNING.decrementAndGet();

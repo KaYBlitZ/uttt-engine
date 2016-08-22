@@ -82,6 +82,11 @@ public class Player {
 	public void sendUpdate(String type, int value) {
 		sendLine(String.format("update game %s %d", type, value));
 	}
+	
+	// For CMA-ES
+	public void updateHeuristics(String heuristics) {
+		sendLine("update heuristics " + heuristics);
+	}
 
 	/**
 	 * Asks the bot for given move type and returns the answer

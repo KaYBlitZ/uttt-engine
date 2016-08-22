@@ -65,7 +65,6 @@ public class Engine {
             logic.playRound();
             // Check if win condition has been met
             if (hasEnded()) {
-                System.out.println("Engine stopping...");
                 // Stop running
                 isRunning = false;
                 // Close off everything
