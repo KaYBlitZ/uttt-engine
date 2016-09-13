@@ -33,9 +33,11 @@ public class Processor implements GameHandler {
     private MacroField mMacroField;
     private UTTTStarter starter;
     private int mGameOverByPlayerErrorPlayerId = 0;
+    private int gameNum;
 
-    public Processor(List<Player> players, MacroField field, UTTTStarter starter) {
+    public Processor(List<Player> players, MacroField field, UTTTStarter starter, int gameNum) {
     	this.starter = starter;
+    	this.gameNum = gameNum;
         mPlayers = players;
         mMacroField = field;
         mMoves = new ArrayList<Move>(Constants.MAX_MOVES);
@@ -196,7 +198,7 @@ public class Processor implements GameHandler {
     
     public void updateCurrentSampleValues() {
     	if (mGameOverByPlayerErrorPlayerId > 0) /* Game over due to too many player errors. Look up the other player, which became the winner */
-    		starter.updateCurrentSampleValues(-1);
-        starter.updateCurrentSampleValues(getWinner());
+    		starter.updateCurrentSampleValues(-1, gameNum);
+        starter.updateCurrentSampleValues(getWinner(), gameNum);
     }
 }

@@ -9,21 +9,23 @@ public class Constants {
 	public static final int MAX_PLAYERS = 2;
 	
 	public static final boolean DEV_MODE = true; // turn this on for local testing
-	public static final boolean DEV_BATCH_MODE = false; // turn on to run multiple games
+	public static final boolean DEV_BATCH_MODE = true; // turn on to run multiple games
+	// For each sample each bot plays half the games as player 1 and the other half as player 2, valid only when batch mode is true
+	public static final boolean DEV_BATCH_MODE_HALF_AND_HALF = true;
 	public static final int DEV_BATCH_SAMPLE_SIZE = 1; // # samples
-	public static final int DEV_BATCH_NUM_GAMES = 500; // # games per sample
+	public static final int DEV_BATCH_NUM_GAMES = 1000; // # games per sample
 	public static final int DEV_BATCH_NUM_CONCURRENT_GAMES = 3; // max # games running at any time
 	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.RandomBot";
 	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.PlayerBot";
-	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.MinimaxBot 7 3";
+	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.MinimaxBot 7 2";
 	//public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.IterativeDeepeningMinimaxBot 3";
-	public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.mcts.MCTSBot 1";
+	public static final String TEST_BOT_1 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.mcts.MCTSBot 0 1";
 	
 	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.RandomBot";
 	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.PlayerBot";
-	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.MinimaxBot 7 3";
-	public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.IterativeDeepeningMinimaxBot 3";
-	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.mcts.MCTSBot 1";
+	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.MinimaxBot 7 2";
+	//public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.IterativeDeepeningMinimaxBot 3";
+	public static final String TEST_BOT_2 = "java -cp D:\\Users\\Kenneth\\git\\UTTTBots\\bin com.kayblitz.uttt.bot.mcts.MCTSBot 0 1";
 	
 	// set to true when using human bot to prevent timeouts
 	// set to false when using bots

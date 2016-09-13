@@ -50,7 +50,7 @@ public class UTTT implements GameLogic {
 	private MacroField mMacroField;
 	private GUI gui;
 
-	public UTTT(String bot1, String bot2, UTTTStarter starter) {
+	public UTTT(String bot1, String bot2, UTTTStarter starter, int gameNum) {
 		this.starter = starter;
 		players = new ArrayList<Player>(Constants.MAX_PLAYERS);
 		// add players
@@ -58,7 +58,7 @@ public class UTTT implements GameLogic {
 		createPlayer(bot2, 2);
 		
 		mMacroField = new MacroField();
-		processor = new Processor(players, mMacroField, starter);
+		processor = new Processor(players, mMacroField, starter, gameNum);
 		engine = new Engine();
 	}
 

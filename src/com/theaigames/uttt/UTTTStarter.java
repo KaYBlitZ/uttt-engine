@@ -15,17 +15,19 @@ public class UTTTStarter {
 	private class GameThread extends Thread {
 		private String bot1, bot2;
 		private UTTTStarter starter;
+		private int gameNum;
 		
-		public GameThread(String bot1, String bot2, UTTTStarter starter) {
+		public GameThread(String bot1, String bot2, UTTTStarter starter, int gameNum) {
 			this.bot1 = bot1;
 			this.bot2 = bot2;
 			this.starter = starter;
+			this.gameNum = gameNum;
 		}
 		
 		@Override
 		public void run() {
 			try {
-				UTTT game = new UTTT(bot1, bot2, starter);
+				UTTT game = new UTTT(bot1, bot2, starter, gameNum);
 				if (heuristics != null)
 					game.updateHeuristics(heuristics);
 				game.start();
@@ -43,7 +45,7 @@ public class UTTTStarter {
 	private String bot1, bot2;
 	private int sampleSize = 1, numGamesPerSample = 500, numConcurrentGames = 3;
 	private boolean disableTimebank;
-	private boolean inBatchMode;
+	private boolean inBatchMode, inHalfAndHalfMode;
 	private boolean outputBot1Error = true, outputBot2Error = true;
 	private boolean isFinished, started;
 	private float avgP1Wins, avgP2Wins, avgTies, avgTimeouts;
@@ -78,11 +80,12 @@ public class UTTTStarter {
 			numConcurrentGames = Constants.DEV_BATCH_NUM_CONCURRENT_GAMES;
 			disableTimebank = Constants.DISABLE_TIMEBANK;
 			inBatchMode = Constants.DEV_BATCH_MODE;
+			inHalfAndHalfMode = Constants.DEV_BATCH_MODE_HALF_AND_HALF;
 			outputBot1Error = Constants.OUTPUT_BOT_1_ERROR;
 			outputBot2Error = Constants.OUTPUT_BOT_2_ERROR;
 		} else {
 			if (args.length < 2) {
-				throw new RuntimeException("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
+				throw new RuntimeException("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games] [half & half mode (1 or 0)]");
 			}
 			if (args.length >= 3)
 				inBatchMode = true;
@@ -93,10 +96,12 @@ public class UTTTStarter {
 					numGamesPerSample = Integer.parseInt(args[3]);
 					if (args.length >= 5)
 						numConcurrentGames = Integer.parseInt(args[4]);
+					if (args.length >= 6)
+						inHalfAndHalfMode = Integer.parseInt(args[5]) > 0;
 				}
 			} catch (NumberFormatException e) {
-				System.err.println("Invalid 3rd, 4th, or 5th arg");
-				throw new RuntimeException("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games]");
+				System.err.println("Invalid 3rd, 4th, 5th, or 6th arg");
+				throw new RuntimeException("Usage: UTTT bot1 bot2 [sample size] [# games per sample] [# concurrent games] [half & half mode (1 or 0)]");
 			}
 			bot1 = args[0];
 			bot2 = args[1];
@@ -117,6 +122,8 @@ public class UTTTStarter {
 		started = true;
 		if (bot1 == null || bot2 == null)
 			throw new RuntimeException("Please call UTTTEngine.setBots()");
+		if (inBatchMode && inHalfAndHalfMode && numGamesPerSample % 2 == 1)
+			throw new RuntimeException("In half & half mode the number of games per sample should be an even number");
 		try {
 			if (inBatchMode) {
 				long startTime = System.currentTimeMillis();
@@ -127,7 +134,12 @@ public class UTTTStarter {
 							Thread.sleep(500);
 						NUM_GAMES_RUNNING.incrementAndGet();
 						System.out.println("Game " + j);
-						new GameThread(bot1, bot2, this).start();
+						if (inHalfAndHalfMode && j < numGamesPerSample / 2) {
+							// if half & half, switch bots for first half
+							new GameThread(bot2, bot1, this, j).start();
+						} else {
+							new GameThread(bot1, bot2, this, j).start();
+						}
 					}
 					while (NUM_GAMES_RUNNING.get() > 0)
 						Thread.sleep(1000);
@@ -141,7 +153,7 @@ public class UTTTStarter {
 				System.out.printf("Elapsed time: %d:%02d:%02d\n", hours, minutes, seconds);
 				finish();
 			} else {
-				UTTT game = new UTTT(bot1, bot2, this);
+				UTTT game = new UTTT(bot1, bot2, this, 0);
 				GUI gui = new GUI(game);
 				gui.setVisible(true);
 				game.setGUI(gui);
@@ -171,13 +183,24 @@ public class UTTTStarter {
     	TIMEOUTS.set(0);
     }
 	
-	public void updateCurrentSampleValues(int winner) {
+	/** Will only be called in batch mode **/
+	public void updateCurrentSampleValues(int winner, int gameNum) {
 		if (winner == -1) { /* Game over due to too many player errors. Look up the other player, which became the winner */
     		TIMEOUTS.incrementAndGet();
     	} else if (winner == 1) {
-    		PLAYER_ONE_WINS.incrementAndGet();
+    		if (inHalfAndHalfMode && gameNum < numGamesPerSample / 2) {
+    			// in first half of half & half mode, player 1 is actually bot 2
+    			PLAYER_TWO_WINS.incrementAndGet();
+    		} else {
+    			PLAYER_ONE_WINS.incrementAndGet();
+    		}
         } else if (winner == 2) {
-        	PLAYER_TWO_WINS.incrementAndGet();
+        	if (inHalfAndHalfMode && gameNum < numGamesPerSample / 2) {
+    			// in first half of half & half mode, player 2 is actually bot 1
+    			PLAYER_ONE_WINS.incrementAndGet();
+    		} else {
+    			PLAYER_TWO_WINS.incrementAndGet();
+    		}
         } else {
         	TIES.incrementAndGet();
         }
@@ -243,6 +266,10 @@ public class UTTTStarter {
 	
 	public void setNumConcurrentGames(int numConcurrentGames) {
 		this.numConcurrentGames = numConcurrentGames;
+	}
+	
+	public void enableHalfAndHalfMode(boolean enabled) {
+		this.inHalfAndHalfMode = enabled;
 	}
 	
 	public void disableTimebank(boolean disabled) {
