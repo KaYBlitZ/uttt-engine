@@ -87,6 +87,10 @@ public class Player {
 	public void updateHeuristics(String heuristics) {
 		sendLine("update heuristics " + heuristics);
 	}
+	
+	public void updateRAVEConstants(String raveConstants) {
+		sendLine("update rave " + raveConstants);
+	}
 
 	/**
 	 * Asks the bot for given move type and returns the answer

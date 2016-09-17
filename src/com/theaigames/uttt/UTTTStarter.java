@@ -30,6 +30,8 @@ public class UTTTStarter {
 				UTTT game = new UTTT(bot1, bot2, starter, gameNum);
 				if (heuristics != null)
 					game.updateHeuristics(heuristics);
+				if (raveConstants != null)
+					game.updateRAVEConstants(raveConstants);
 				game.start();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -49,9 +51,10 @@ public class UTTTStarter {
 	private boolean outputBot1Error = true, outputBot2Error = true;
 	private boolean isFinished, started;
 	private float avgP1Wins, avgP2Wins, avgTies, avgTimeouts;
+	private boolean disableOutput = false;
 	
 	// For CMA-ES
-	private String heuristics;
+	private String heuristics, raveConstants;
 	
 	public UTTTStarter() {
 		this(false);
@@ -128,12 +131,14 @@ public class UTTTStarter {
 			if (inBatchMode) {
 				long startTime = System.currentTimeMillis();
 				for (int i = 0; i < sampleSize; i++) {
-					System.out.println("Sample " + i);
+					if (!disableOutput)
+						System.out.println("Sample " + i);
 					for (int j = 0; j < numGamesPerSample; j++) {
 						while (NUM_GAMES_RUNNING.get() >= numConcurrentGames)
 							Thread.sleep(500);
 						NUM_GAMES_RUNNING.incrementAndGet();
-						System.out.println("Game " + j);
+						if (!disableOutput)
+							System.out.println("Game " + j);
 						if (inHalfAndHalfMode && j < numGamesPerSample / 2) {
 							// if half & half, switch bots for first half
 							new GameThread(bot2, bot1, this, j).start();
@@ -150,7 +155,8 @@ public class UTTTStarter {
 				long hours = elapsed / 3600;
 				long minutes = (elapsed % 3600) / 60;
 				long seconds = (elapsed % 3600) % 60;
-				System.out.printf("Elapsed time: %d:%02d:%02d\n", hours, minutes, seconds);
+				if (!disableOutput)
+					System.out.printf("Elapsed time: %d:%02d:%02d\n", hours, minutes, seconds);
 				finish();
 			} else {
 				UTTT game = new UTTT(bot1, bot2, this, 0);
@@ -207,20 +213,24 @@ public class UTTTStarter {
 	}
     
     private void displayBatchValues() {
-    	System.out.println("# Samples = " + sampleSize + ", # Games per Sample = " + numGamesPerSample);
-    	System.out.println("Sample #, P1 Wins, P2 Wins, Ties, Timeouts");
+    	if (!disableOutput) {
+    		System.out.println("# Samples = " + sampleSize + ", # Games per Sample = " + numGamesPerSample);
+    		System.out.println("Sample #, P1 Wins, P2 Wins, Ties, Timeouts");
+    	}
     	for (int i = 0; i < sampleSize; i++) {
     		avgP1Wins += sampleP1Wins.get(i);
     		avgP2Wins += sampleP2Wins.get(i);
     		avgTies += sampleTies.get(i);
     		avgTimeouts += sampleTimeouts.get(i);
-    		System.out.printf("%d, %d, %d, %d, %d\n", i, sampleP1Wins.get(i), sampleP2Wins.get(i), sampleTies.get(i), sampleTimeouts.get(i));
+    		if (!disableOutput)
+    			System.out.printf("%d, %d, %d, %d, %d\n", i, sampleP1Wins.get(i), sampleP2Wins.get(i), sampleTies.get(i), sampleTimeouts.get(i));
     	}
     	avgP1Wins /= sampleSize;
     	avgP2Wins /= sampleSize;
     	avgTies /= sampleSize;
     	avgTimeouts /= sampleSize;
-    	System.out.printf("Mean, %f, %f, %f, %f\n", avgP1Wins, avgP2Wins, avgTies, avgTimeouts);
+    	if (!disableOutput)
+    		System.out.printf("Mean, %f, %f, %f, %f\n", avgP1Wins, avgP2Wins, avgTies, avgTimeouts);
     }
     
     /** Heuristics must be updated before calling start() **/
@@ -233,6 +243,12 @@ public class UTTTStarter {
     	}
     	s += String.valueOf(heuristics[heuristics.length - 1]);
     	this.heuristics = s;
+    }
+    
+    public void updateRAVEConstants(double explorationConstant, double raveConstant) {
+    	if (started)
+    		throw new RuntimeException("RAVE constants must be updated before calling start()");
+    	raveConstants = String.valueOf(explorationConstant) + " " + String.valueOf(raveConstant);
     }
     
     public float getAverageP1Wins() {
@@ -270,6 +286,10 @@ public class UTTTStarter {
 	
 	public void enableHalfAndHalfMode(boolean enabled) {
 		this.inHalfAndHalfMode = enabled;
+	}
+	
+	public void disableOutput(boolean disabled) {
+		this.disableOutput = disabled;
 	}
 	
 	public void disableTimebank(boolean disabled) {

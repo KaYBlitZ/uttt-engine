@@ -94,6 +94,11 @@ public class UTTT implements GameLogic {
 		for (Player player : players)
 			player.updateHeuristics(heuristics);
 	}
+	
+	public void updateRAVEConstants(String raveConstants) {
+		for (Player player : players)
+			player.updateRAVEConstants(raveConstants);
+	}
 
 	/**
 	 * @return : True when the game is over
