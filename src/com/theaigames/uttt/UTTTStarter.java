@@ -55,6 +55,7 @@ public class UTTTStarter {
 	
 	// For CMA-ES
 	private String heuristics, raveConstants;
+	private boolean seedBot1, seedBot2;
 	
 	public UTTTStarter() {
 		this(false);
@@ -139,11 +140,13 @@ public class UTTTStarter {
 						NUM_GAMES_RUNNING.incrementAndGet();
 						if (!disableOutput)
 							System.out.println("Game " + j);
+						String b1 = seedBot1 ? bot1 + " " + j : bot1;
+						String b2 = seedBot2 ? bot2 + " " + j : bot2;
 						if (inHalfAndHalfMode && j < numGamesPerSample / 2) {
 							// if half & half, switch bots for first half
-							new GameThread(bot2, bot1, this, j).start();
+							new GameThread(b2, b1, this, j).start();
 						} else {
-							new GameThread(bot1, bot2, this, j).start();
+							new GameThread(b1, b2, this, j).start();
 						}
 					}
 					while (NUM_GAMES_RUNNING.get() > 0)
@@ -249,6 +252,16 @@ public class UTTTStarter {
     	if (started)
     		throw new RuntimeException("RAVE constants must be updated before calling start()");
     	raveConstants = String.valueOf(explorationConstant) + " " + String.valueOf(raveConstant);
+    }
+    
+    /** Valid only in batch mode. Seeds the corresponding bots with the iteration number. For a sample size of 100 games,
+     * the bots will be seeded with 0 for the first game, 1 for the second game, and so on and so forth up to 99 for the last game.
+     */
+    public void seedBots(boolean bot1Seeded, boolean bot2Seeded) {
+    	if (started)
+    		throw new RuntimeException("Bots must be seeded before calling start()");
+    	this.seedBot1 = bot1Seeded;
+    	this.seedBot2 = bot2Seeded;
     }
     
     public float getAverageP1Wins() {
