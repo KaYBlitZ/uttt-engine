@@ -32,6 +32,10 @@ public class UTTTStarter {
 					game.updateHeuristics(heuristics);
 				if (raveConstants != null)
 					game.updateRAVEConstants(raveConstants);
+				if (raveHeuristicConstants != null)
+					game.updateRAVEHeuristicConstants(raveHeuristicConstants);
+				if (simulationConstants != null)
+					game.updateSimulationConstants(simulationConstants);
 				game.start();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -54,7 +58,7 @@ public class UTTTStarter {
 	private boolean disableOutput = false;
 	
 	// For CMA-ES
-	private String heuristics, raveConstants;
+	private String heuristics, raveConstants, raveHeuristicConstants, simulationConstants;
 	private boolean seedBot1, seedBot2;
 	
 	public UTTTStarter() {
@@ -252,6 +256,19 @@ public class UTTTStarter {
     	if (started)
     		throw new RuntimeException("RAVE constants must be updated before calling start()");
     	raveConstants = String.valueOf(explorationConstant) + " " + String.valueOf(raveConstant);
+    }
+    
+    public void updateRAVEHeuristicConstants(double heuristicMultiplier, double uctConfidence, double amafConfidence) {
+    	if (started)
+    		throw new RuntimeException("RAVE heuristic constants must be updated before calling start()");
+    	raveHeuristicConstants = String.valueOf(heuristicMultiplier) + " " + String.valueOf(uctConfidence) + 
+    			" " + String.valueOf(amafConfidence);
+    }
+    
+    public void updateSimulationConstants(int raveHeuristic) {
+    	if (started)
+    		throw new RuntimeException("Heuristic simulation constants must be updated before calling start()");
+    	simulationConstants = String.valueOf(raveHeuristic);
     }
     
     /** Valid only in batch mode. Seeds the corresponding bots with the iteration number. For a sample size of 100 games,

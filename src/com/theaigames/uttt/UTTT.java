@@ -99,6 +99,16 @@ public class UTTT implements GameLogic {
 		for (Player player : players)
 			player.updateRAVEConstants(raveConstants);
 	}
+	
+	public void updateRAVEHeuristicConstants(String raveHeuristicConstants) {
+		for (Player player : players)
+			player.updateRAVEHeuristicConstants(raveHeuristicConstants);
+	}
+	
+	public void updateSimulationConstants(String simulationConstants) {
+		for (Player player : players)
+			player.updateSimulationConstants(simulationConstants);
+	}
 
 	/**
 	 * @return : True when the game is over
