@@ -12,17 +12,17 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.theaigames.uttt.Constants;
-import com.theaigames.uttt.moves.Move;
+import com.theaigames.uttt.move.ProcessorMove;
 
 @SuppressWarnings("serial")
 public class MoveList extends JPanel {
 
-	private List<Move> moves;
+	private List<ProcessorMove> moves;
 	private JList<String> list;
 	private BoardPanel boardPanel;
 	private MoveErrorText errorText;
 
-	public MoveList(List<Move> moves, BoardPanel boardPanel, MoveErrorText errorText) {
+	public MoveList(List<ProcessorMove> moves, BoardPanel boardPanel, MoveErrorText errorText) {
 		this.moves = moves;
 		this.boardPanel = boardPanel;
 		this.errorText = errorText;
@@ -53,7 +53,7 @@ public class MoveList extends JPanel {
 		selectMove(moves.get(lastIndex));
 	}
 	
-	public void selectMove(Move move) {
+	public void selectMove(ProcessorMove move) {
 		boardPanel.changeState(move);
 		if (move.isIllegal()) {
 			errorText.setError(move.getIllegalMove());

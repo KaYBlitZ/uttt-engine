@@ -26,8 +26,8 @@ import com.theaigames.engine.io.IOPlayer;
 import com.theaigames.game.GameHandler;
 import com.theaigames.game.Processor;
 import com.theaigames.gui.GUI;
-import com.theaigames.uttt.field.MacroField;
-import com.theaigames.uttt.moves.Move;
+import com.theaigames.uttt.field.Field;
+import com.theaigames.uttt.move.ProcessorMove;
 import com.theaigames.uttt.player.Player;
 
 /**
@@ -47,7 +47,7 @@ public class UTTT implements GameLogic {
 	public Engine engine; // runs game
 	public GameHandler processor; // handles data
 	private List<Player> players;
-	private MacroField mMacroField;
+	private Field field;
 	private GUI gui;
 
 	public UTTT(String bot1, String bot2, UTTTStarter starter, int gameNum) {
@@ -57,8 +57,8 @@ public class UTTT implements GameLogic {
 		createPlayer(bot1, 1);
 		createPlayer(bot2, 2);
 		
-		mMacroField = new MacroField();
-		processor = new Processor(players, mMacroField, starter, gameNum);
+		field = new Field();
+		processor = new Processor(players, field, starter, gameNum);
 		engine = new Engine();
 	}
 
@@ -188,19 +188,19 @@ public class UTTT implements GameLogic {
 		this.gui = gui;
 	}
 
-	public int[] getMacroBoard() {
-		return mMacroField.getMacroBoard();
+	public int[][] getMicroField() {
+		return field.getMicroField();
 	}
 
-	public int[] getField() {
-		return mMacroField.getField();
+	public int[][] getField() {
+		return field.getField();
 	}
 
 	public int getCurrentPlayerId() {
-		return mMacroField.getCurrentPlayerId();
+		return field.getCurrentPlayerId();
 	}
 
-	public List<Move> getMoves() {
+	public List<ProcessorMove> getMoves() {
 		return processor.getMoves();
 	}
 	
@@ -211,7 +211,7 @@ public class UTTT implements GameLogic {
 	 * @param row
 	 */
 	public void enterMove(int col, int row) {
-		Player bot = players.get(mMacroField.getCurrentPlayerId() - 1);
+		Player bot = players.get(field.getCurrentPlayerId() - 1);
 		try {
 			bot.writeToBot("move " + col + " " + row);
 		} catch (IOException e) {
