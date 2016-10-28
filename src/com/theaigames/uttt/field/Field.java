@@ -22,31 +22,35 @@ import java.util.Stack;
 import com.theaigames.uttt.move.Position;
 
 public class Field { // represents the entire field
-	// origin is top left, access by column (x) the row (y)
+	/** Field refers to the entire field
+	 * MacroField refers to the large TTT field
+	 * MicroField refers to any single "mini" TTT field
+	 * Origin is top left, access by column (x) the row (y)
+	 **/
 	public static final int FIELD_COLUMNS = 9;
 	public static final int FIELD_ROWS = 9;
+	public static final int MACRO_COLUMNS = 3;
+	public static final int MACRO_ROWS = 3;
 	public static final int MICRO_COLUMNS = 3;
 	public static final int MICRO_ROWS = 3;
-	public static final int MINI_COLUMNS = 3;
-	public static final int MINI_ROWS = 3;
 	
 	public static final int FIELD_PLAYABLE = 0;
-	public static final int MICRO_PLAYABLE = -1;
-	public static final int MICRO_UNPLAYABLE = 0, MICRO_TIE = 0;
+	public static final int MACRO_PLAYABLE = -1;
+	public static final int MACRO_UNPLAYABLE = 0, MACRO_TIE = 0;
     
 	private int[][] field; // field state sent to bots
-	private int[][] microField; // the micro field state sent to bots
+	private int[][] macroField; // the micro field state sent to bots
     public String mLastError = "";
     private Stack<Position> moves;
     private String mWinType = "None";
 	private int currentPlayerId = 1;
-	private Position nextMicro;
+	private Position nextMicroField;
 
     public Field() {
 		field = new int[FIELD_COLUMNS][FIELD_ROWS];
-		microField = new int[MICRO_COLUMNS][MICRO_ROWS];
+		macroField = new int[MACRO_COLUMNS][MACRO_ROWS];
 		moves = new Stack<Position>();
-		nextMicro = new Position(-1, -1); // anywhere
+		nextMicroField = new Position(-1, -1); // anywhere
         clearFields();
     }
     
@@ -56,9 +60,9 @@ public class Field { // represents the entire field
         		field[col][row] = FIELD_PLAYABLE;
         	}
         }
-        for (int col = 0; col < MICRO_COLUMNS; col++) {
-        	for (int row = 0; row < MICRO_ROWS; row++) {
-        		microField[col][row] = MICRO_PLAYABLE;
+        for (int col = 0; col < MACRO_COLUMNS; col++) {
+        	for (int row = 0; row < MACRO_ROWS; row++) {
+        		macroField[col][row] = MACRO_PLAYABLE;
         	}
         }
     }
@@ -72,12 +76,12 @@ public class Field { // represents the entire field
         mLastError = "";
         moves.add(new Position(column, row));
         
-        if (microField[column / 3][row / 3] == MICRO_PLAYABLE) {
+        if (macroField[column / 3][row / 3] == MACRO_PLAYABLE) {
 	    	if (field[column][row] == FIELD_PLAYABLE) {
 	    		field[column][row] = id;
 	    		// determine next micro field
-	    		updateMicroWinner(column / 3, row / 3);
-	    		updateMicroField(column, row);
+	    		updateMacroWinner(column / 3, row / 3);
+	    		updateMacroField(column, row);
 				return true;
 	        } else {
 				mLastError = String.format("Field cell not empty (%d, %d)", column, row);
@@ -90,11 +94,11 @@ public class Field { // represents the entire field
     }
 	
 	
-	public void updateMicroWinner(int microColumn, int microRow) {
-		microField[microColumn][microRow] = getMicroWinner(microColumn * 3, microRow * 3);
+	public void updateMacroWinner(int macroColumn, int macroRow) {
+		macroField[macroColumn][macroRow] = getMicroWinner(macroColumn * 3, macroRow * 3);
 	}
 	
-	public void updateMicroField(int column, int row) {
+	public void updateMacroField(int column, int row) {
 		// ie: 3,2 move -> 0,2 next micro -> 0,6 top-left next micro box coords
 		// ie: 5,4 -> 2,1 -> 6,3
 		// convert move coords into next micro field coords 
@@ -104,17 +108,17 @@ public class Field { // represents the entire field
 			row -= 3;
 
 		// whether the next micro field is finished or not
-		boolean nextMicroPlayable = getMicroWinner(column * 3, row * 3) == MICRO_PLAYABLE;
-		nextMicro = nextMicroPlayable ? new Position(column, row) : new Position(-1, -1);
+		boolean nextMicroPlayable = getMicroWinner(column * 3, row * 3) == MACRO_PLAYABLE;
+		nextMicroField = nextMicroPlayable ? new Position(column, row) : new Position(-1, -1);
 		for (int y = 0; y < 3; y++) {
 			for (int x = 0; x < 3; x++) {
-				if (microField[x][y] < 0 || (microField[x][y] == 0 && !isMicroFull(x * 3, y * 3))) {
+				if (macroField[x][y] < 0 || (macroField[x][y] == 0 && !isMicroFull(x * 3, y * 3))) {
 					if (!nextMicroPlayable || (x == column && y == row)) {
 						// next micro field finished, set all open micro fields to be playable
 						// else set playable only if its the nextMicroIndex
-						microField[x][y] = -1;
+						macroField[x][y] = -1;
 					} else {
-						microField[x][y] = 0;
+						macroField[x][y] = 0;
 					}
 				}
 			}
@@ -175,34 +179,34 @@ public class Field { // represents the entire field
 	}
 	
 	public int getWinner() {
-		if (microField[0][0] > 0 && microField[0][0] == microField[1][1] &&
-				microField[1][1] == microField[2][2]) { // \ diagonal
-			return microField[0][0];
-		} else if (microField[0][2] > 0 && microField[0][2] == microField[1][1] &&
-				microField[1][1] == microField[2][0]) { // / diagonal
-			return microField[0][2];
+		if (macroField[0][0] > 0 && macroField[0][0] == macroField[1][1] &&
+				macroField[1][1] == macroField[2][2]) { // \ diagonal
+			return macroField[0][0];
+		} else if (macroField[0][2] > 0 && macroField[0][2] == macroField[1][1] &&
+				macroField[1][1] == macroField[2][0]) { // / diagonal
+			return macroField[0][2];
 		}
 		
 		// check vertical
 		for (int x = 0; x < 3; x++) {
-			if (microField[x][0] > 0 && microField[x][0] == microField[x][1] &&
-					microField[x][1] == microField[x][2]) {
-				return microField[x][0];
+			if (macroField[x][0] > 0 && macroField[x][0] == macroField[x][1] &&
+					macroField[x][1] == macroField[x][2]) {
+				return macroField[x][0];
 			}
 		}
 		
 		// check horizontal
 		for (int y = 0; y < 3; y++) {
-			if (microField[0][y] > 0 && microField[0][y] == microField[1][y] &&
-					microField[1][y] == microField[2][y]) {
-				return microField[0][y];
+			if (macroField[0][y] > 0 && macroField[0][y] == macroField[1][y] &&
+					macroField[1][y] == macroField[2][y]) {
+				return macroField[0][y];
 			}
 		}
 		
 		for (int col = 0; col < 3; col++) {
 			for (int row = 0; row < 3; row++) {
 				// game still playable
-				if (microField[col][row] == -1)
+				if (macroField[col][row] == -1)
 					return -1;
 			}
 		}
@@ -237,19 +241,19 @@ public class Field { // represents the entire field
 	}
     
     /**
-     * Creates comma separated String of the micro field.
+     * Creates comma separated String of the macro field.
      * player id if won, 0 if not playable or tie, -1 if playable
      * @param args : 
-     * @return : comma separated String of the micro field
+     * @return : comma separated String of the macro field
      */
-	public String getMicroFieldString() {
+	public String getMacroFieldString() {
 		StringBuilder sb = new StringBuilder();
 		int counter = 0;
-		for (int y = 0; y < MICRO_ROWS; y++) {
-			for (int x = 0; x < MICRO_COLUMNS; x++) {
+		for (int y = 0; y < MACRO_ROWS; y++) {
+			for (int x = 0; x < MACRO_COLUMNS; x++) {
 				if (counter > 0)
 					sb.append(',');
-				sb.append(microField[x][y]);
+				sb.append(macroField[x][y]);
 				counter++;
 			}
 		}
@@ -284,15 +288,16 @@ public class Field { // represents the entire field
     public String getWinType() {
         return mWinType;
     }
-
-	public Position getNextMicro() {
-		return nextMicro;
+    
+    /** Returns the next micro field coords in macro space **/
+	public Position getNextMicroField() {
+		return nextMicroField;
 	}
 
 	/* For GUI */
 
-	public int[][] getMicroField() {
-		return microField;
+	public int[][] getMacroField() {
+		return macroField;
 	}
 
 	public int[][] getField() {

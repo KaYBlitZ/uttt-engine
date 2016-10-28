@@ -50,7 +50,7 @@ public class Processor implements GameHandler {
 		move.setColumn(-1);
 		move.setRow(-1);
 		move.setField(field.getField());
-		move.setMicro(field.getMicroField());
+		move.setMacroField(field.getMacroField());
 		mMoves.add(move);
     }
 
@@ -77,11 +77,11 @@ public class Processor implements GameHandler {
 				player.sendUpdate("round", mRoundNumber);
 				player.sendUpdate("move", mMoveNumber);
 				player.sendUpdate("field", field.getFieldString());
-				player.sendUpdate("macroboard", field.getMicroFieldString());
+				player.sendUpdate("macroboard", field.getMacroFieldString());
 				if (!starter.inBatchMode()) { 
 					System.out.printf("Round %d, Move %d\n", mRoundNumber, mMoveNumber);
 					System.out.println("Field: " + field.getFieldString());
-					System.out.println("Micro: " + field.getMicroFieldString());
+					System.out.println("Micro: " + field.getMacroFieldString());
 				}
 
                 String response = player.requestMove("move");
@@ -90,35 +90,35 @@ public class Processor implements GameHandler {
 				move.setColumn(field.getLastColumn());
 				move.setRow(field.getLastRow());
 				move.setField(field.getField());
-				move.setMicro(field.getMicroField());
+				move.setMacroField(field.getMacroField());
 				if (success) { // successful move
                     mMoves.add(move);
 				} else { // 1st try bad move
                     move.setIllegalMove(field.getLastError() + " (first try)");
                     mMoves.add(move);
 					player.sendUpdate("field", field.getFieldString());
-					player.sendUpdate("macroboard", field.getMicroFieldString());
+					player.sendUpdate("macroboard", field.getMacroFieldString());
                     response = player.requestMove("move");
 					success = parseResponse(response, player);
 					move = new ProcessorMove(player);
 					move.setColumn(field.getLastColumn());
 					move.setRow(field.getLastRow());
 					move.setField(field.getField());
-					move.setMicro(field.getMicroField());
+					move.setMacroField(field.getMacroField());
 					if (success) {
                         mMoves.add(move);
 					} else { // 2nd try bad move
                         move.setIllegalMove(field.getLastError() + " (second try)");
                         mMoves.add(move);
 						player.sendUpdate("field", field.getFieldString());
-						player.sendUpdate("macroboard", field.getMicroFieldString());
+						player.sendUpdate("macroboard", field.getMacroFieldString());
                         response = player.requestMove("move");
 						success = parseResponse(response, player);
 						move = new ProcessorMove(player);
 						move.setColumn(field.getLastColumn());
 						move.setRow(field.getLastRow());
 						move.setField(field.getField());
-						move.setMicro(field.getMicroField());
+						move.setMacroField(field.getMacroField());
 						if (success) {
 							mMoves.add(move);
                         } else { /* Too many errors, other player wins */
@@ -136,7 +136,7 @@ public class Processor implements GameHandler {
 		if (isGameOver() && !starter.inBatchMode()) {
 			System.out.println("Final State:");
 			System.out.println("Field: " + field.getFieldString());
-			System.out.println("Micro: " + field.getMicroFieldString());
+			System.out.println("Micro: " + field.getMacroFieldString());
 			System.out.println("The winner is player " + getWinner());
 		}
     }
@@ -153,8 +153,8 @@ public class Processor implements GameHandler {
 			int row = Integer.parseInt(parts[2]);
 			if (field.makeMove(column, row, player.getId())) {
 				if (!starter.inBatchMode()) { 
-					System.out.printf("%d plays (%d %d). Next micro: (%d, %d)\n", player.getId(), column, row,
-							field.getNextMicro().column, field.getNextMicro().row);
+					System.out.printf("%d plays (%d %d). Next micro field: (%d, %d)\n", player.getId(), column, row,
+							field.getNextMicroField().column, field.getNextMicroField().row);
 				}
                 return true;
             }

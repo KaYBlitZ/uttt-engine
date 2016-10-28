@@ -7,7 +7,7 @@ public class ProcessorMove {
 
 	// representations of field after player makes move
 	private int[][] field;
-	private int[][] microField;
+	private int[][] macroField;
 	private int column, row;
 	private Player player; // player that did this move
 	private String illegalMove; // gets the value of the error message if move
@@ -16,7 +16,7 @@ public class ProcessorMove {
 	public ProcessorMove(Player player) {
 		this.player = player;
 		field = new int[Field.FIELD_COLUMNS][Field.FIELD_ROWS];
-		microField = new int[Field.MICRO_COLUMNS][Field.MICRO_ROWS];
+		macroField = new int[Field.MACRO_COLUMNS][Field.MACRO_ROWS];
 	}
 
 	public void setPlayer(Player player) {
@@ -71,13 +71,13 @@ public class ProcessorMove {
 		return field;
 	}
 
-	public void setMicro(int[][] microField) {
-		for (int col = 0; col < Field.MICRO_COLUMNS; col++) {
-			System.arraycopy(microField[col], 0, this.microField[col], 0, Field.MICRO_ROWS);
+	public void setMacroField(int[][] macroField) {
+		for (int col = 0; col < Field.MACRO_COLUMNS; col++) {
+			System.arraycopy(macroField[col], 0, this.macroField[col], 0, Field.MACRO_ROWS);
 		}
 	}
 
-	public int[][] getMicroField() {
-		return microField;
+	public int[][] getMacroField() {
+		return macroField;
 	}
 }

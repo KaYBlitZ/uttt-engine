@@ -188,8 +188,8 @@ public class UTTT implements GameLogic {
 		this.gui = gui;
 	}
 
-	public int[][] getMicroField() {
-		return field.getMicroField();
+	public int[][] getMacroField() {
+		return field.getMacroField();
 	}
 
 	public int[][] getField() {

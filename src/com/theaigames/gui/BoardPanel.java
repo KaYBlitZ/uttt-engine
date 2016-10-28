@@ -65,22 +65,22 @@ public class BoardPanel extends JPanel {
 				errorText.setError(MoveErrorText.NO_ERROR);
 			}
 			
-			// draw mini fields
-			int micro[][] = game.getMicroField();
+			// draw micro fields
+			int macro[][] = game.getMacroField();
 			int playerId = game.getCurrentPlayerId();
 			g2.setStroke(new BasicStroke(Constants.MINI_STROKE_WIDTH));
-			drawMiniTTT(0, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[0][0])); // top-left
-			drawMiniTTT(thirdWidth, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[1][0])); // top
-			drawMiniTTT(thirdWidth * 2, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[2][0])); // top-right
-			drawMiniTTT(0, thirdHeight, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[0][1])); // left-middle
-			drawMiniTTT(thirdWidth, thirdHeight, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[1][1])); // middle
-			drawMiniTTT(thirdWidth * 2, thirdHeight, thirdWidth, thirdHeight, g2,
-					getMicroFieldColor(playerId, micro[2][1])); // right-middle
-			drawMiniTTT(0, thirdHeight * 2, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[0][2])); // bottom-left
-			drawMiniTTT(thirdWidth, thirdHeight * 2, thirdWidth, thirdHeight, g2,
-					getMicroFieldColor(playerId, micro[1][2])); // bottom
-			drawMiniTTT(thirdWidth * 2, thirdHeight * 2, thirdWidth, thirdHeight, g2,
-					getMicroFieldColor(playerId, micro[2][2])); // bottom-right
+			drawMicroField(0, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[0][0])); // top-left
+			drawMicroField(thirdWidth, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[1][0])); // top
+			drawMicroField(thirdWidth * 2, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[2][0])); // top-right
+			drawMicroField(0, thirdHeight, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[0][1])); // left-middle
+			drawMicroField(thirdWidth, thirdHeight, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[1][1])); // middle
+			drawMicroField(thirdWidth * 2, thirdHeight, thirdWidth, thirdHeight, g2,
+					getMicroFieldColor(playerId, macro[2][1])); // right-middle
+			drawMicroField(0, thirdHeight * 2, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[0][2])); // bottom-left
+			drawMicroField(thirdWidth, thirdHeight * 2, thirdWidth, thirdHeight, g2,
+					getMicroFieldColor(playerId, macro[1][2])); // bottom
+			drawMicroField(thirdWidth * 2, thirdHeight * 2, thirdWidth, thirdHeight, g2,
+					getMicroFieldColor(playerId, macro[2][2])); // bottom-right
 
 			// draw markers
 			int field[][] = game.getField();
@@ -89,23 +89,23 @@ public class BoardPanel extends JPanel {
 		} else {
 			if (selectedMove != null) {
 				// draw mini fields
-				int micro[][] = selectedMove.getMicroField();
+				int macro[][] = selectedMove.getMacroField();
 				// we need the next player's id to get the colors right
 				int playerId = selectedMove.getPlayerId() == 1 ? 2 : 1;
 				g2.setStroke(new BasicStroke(Constants.MINI_STROKE_WIDTH));
-				drawMiniTTT(0, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[0][0])); // top-left
-				drawMiniTTT(thirdWidth, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[1][0])); // top
-				drawMiniTTT(thirdWidth * 2, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[2][0])); // top-right
-				drawMiniTTT(0, thirdHeight, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[0][1])); // left-middle
-				drawMiniTTT(thirdWidth, thirdHeight, thirdWidth, thirdHeight, g2,
-						getMicroFieldColor(playerId, micro[1][1])); // middle
-				drawMiniTTT(thirdWidth * 2, thirdHeight, thirdWidth, thirdHeight, g2,
-						getMicroFieldColor(playerId, micro[2][1])); // right-middle
-				drawMiniTTT(0, thirdHeight * 2, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, micro[0][2])); // bottom-left
-				drawMiniTTT(thirdWidth, thirdHeight * 2, thirdWidth, thirdHeight, g2,
-						getMicroFieldColor(playerId, micro[1][2])); // bottom
-				drawMiniTTT(thirdWidth * 2, thirdHeight * 2, thirdWidth, thirdHeight, g2,
-						getMicroFieldColor(playerId, micro[2][2])); // bottom-right
+				drawMicroField(0, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[0][0])); // top-left
+				drawMicroField(thirdWidth, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[1][0])); // top
+				drawMicroField(thirdWidth * 2, 0, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[2][0])); // top-right
+				drawMicroField(0, thirdHeight, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[0][1])); // left-middle
+				drawMicroField(thirdWidth, thirdHeight, thirdWidth, thirdHeight, g2,
+						getMicroFieldColor(playerId, macro[1][1])); // middle
+				drawMicroField(thirdWidth * 2, thirdHeight, thirdWidth, thirdHeight, g2,
+						getMicroFieldColor(playerId, macro[2][1])); // right-middle
+				drawMicroField(0, thirdHeight * 2, thirdWidth, thirdHeight, g2, getMicroFieldColor(playerId, macro[0][2])); // bottom-left
+				drawMicroField(thirdWidth, thirdHeight * 2, thirdWidth, thirdHeight, g2,
+						getMicroFieldColor(playerId, macro[1][2])); // bottom
+				drawMicroField(thirdWidth * 2, thirdHeight * 2, thirdWidth, thirdHeight, g2,
+						getMicroFieldColor(playerId, macro[2][2])); // bottom-right
 
 				// draw markers
 				int field[][] = selectedMove.getField();
@@ -123,7 +123,7 @@ public class BoardPanel extends JPanel {
 		g2.drawLine(0, thirdHeight * 2, getWidth(), thirdHeight * 2);
 	}
 	
-	public void drawMiniTTT(int x, int y, int width, int height, Graphics g, Color color) {
+	public void drawMicroField(int x, int y, int width, int height, Graphics g, Color color) {
 		// color background
 		g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 128));
 		g.fillRect(x, y, width, height);
@@ -172,8 +172,8 @@ public class BoardPanel extends JPanel {
 		}
 	}
 
-	public Color getMicroFieldColor(int playerId, int microValue) {
-		if (microValue == Field.MICRO_PLAYABLE) {
+	public Color getMicroFieldColor(int playerId, int macroValue) {
+		if (macroValue == Field.MACRO_PLAYABLE) {
 			if ((game.isGameOver() && selectedMove == null) || (selectedMove != null && selectedMove == lastMove)) {
 				// First case is for when game just ended. We need to show
 				// playable fields as open, not the other player's color.
@@ -183,10 +183,10 @@ public class BoardPanel extends JPanel {
 				return Color.ORANGE;
 			}
 			return Color.GREEN;
-		} else if (microValue == Field.MICRO_UNPLAYABLE) {
+		} else if (macroValue == Field.MACRO_UNPLAYABLE) {
 			return Color.ORANGE; // tie or not playable
 		} else { // return winner's color
-			return getPlayerColor(microValue);
+			return getPlayerColor(macroValue);
 		}
 	}
 
