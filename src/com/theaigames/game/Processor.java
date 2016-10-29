@@ -94,6 +94,10 @@ public class Processor implements GameHandler {
 				if (success) { // successful move
                     mMoves.add(move);
 				} else { // 1st try bad move
+					try {
+						// In case of timeout let bot finish outputting move
+						Thread.sleep(2000L);
+					} catch (InterruptedException e) {}
                     move.setIllegalMove(field.getLastError() + " (first try)");
                     mMoves.add(move);
 					player.sendUpdate("field", field.getFieldString());
@@ -108,6 +112,10 @@ public class Processor implements GameHandler {
 					if (success) {
                         mMoves.add(move);
 					} else { // 2nd try bad move
+						try {
+							// In case of timeout let bot finish outputting move
+							Thread.sleep(2000L);
+						} catch (InterruptedException e) {}
                         move.setIllegalMove(field.getLastError() + " (second try)");
                         mMoves.add(move);
 						player.sendUpdate("field", field.getFieldString());

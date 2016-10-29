@@ -108,6 +108,7 @@ public class Player {
 	 * @return : the bot's output
 	 */
 	public String requestMove(String moveType) {
+		ioPlayer.response = null; // consume response in case of timeout before
 		long startTime = System.currentTimeMillis();
 
 		// write the request to the bot

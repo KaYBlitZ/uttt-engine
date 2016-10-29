@@ -87,7 +87,7 @@ public class IOPlayer implements Runnable {
             return "";
         }
         
-        while(this.response == null) {
+        while (this.response == null) {
             long timeNow = System.currentTimeMillis();
             long timeElapsed = timeNow - timeStart;
             

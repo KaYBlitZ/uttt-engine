@@ -265,10 +265,10 @@ public class UTTTStarter {
     			" " + String.valueOf(amafConfidence);
     }
     
-    public void updateSimulationConstants(int raveHeuristic) {
+    public void updateSimulationConstants(int uctEPTMaxMoves, double uctEPTWinLossThreshold) {
     	if (started)
     		throw new RuntimeException("Heuristic simulation constants must be updated before calling start()");
-    	simulationConstants = String.valueOf(raveHeuristic);
+    	simulationConstants = String.valueOf(uctEPTMaxMoves) + " " + String.valueOf(uctEPTWinLossThreshold);
     }
     
     /** Valid only in batch mode. Seeds the corresponding bots with the iteration number. For a sample size of 100 games,
