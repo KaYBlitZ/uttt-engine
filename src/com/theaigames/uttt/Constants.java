@@ -9,7 +9,7 @@ public class Constants {
 	public static final int MAX_PLAYERS = 2;
 	
 	public static final boolean DEV_MODE = true; // turn this on for local testing
-	public static final boolean DEV_BATCH_MODE = true; // turn on to run multiple games
+	public static final boolean DEV_BATCH_MODE = false; // turn on to run multiple games
 	// For each sample each bot plays half the games as player 1 and the other half as player 2, valid only when batch mode is true
 	public static final boolean DEV_BATCH_MODE_HALF_AND_HALF = true;
 	public static final int DEV_BATCH_SAMPLE_SIZE = 1; // # samples
