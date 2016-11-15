@@ -265,10 +265,11 @@ public class UTTTStarter {
     			" " + String.valueOf(amafConfidence);
     }
     
-    public void updateSimulationConstants(int uctEPTMaxMoves, double uctEPTWinLossThreshold) {
+    public void updateSimulationConstants(int uctEPTMaxMoves, int raveEPTMaxMoves, double eptWinLossThreshold) {
     	if (started)
     		throw new RuntimeException("Heuristic simulation constants must be updated before calling start()");
-    	simulationConstants = String.valueOf(uctEPTMaxMoves) + " " + String.valueOf(uctEPTWinLossThreshold);
+    	simulationConstants = String.valueOf(uctEPTMaxMoves) + " " + String.valueOf(raveEPTMaxMoves) + " " + 
+    		String.valueOf(eptWinLossThreshold);
     }
     
     /** Valid only in batch mode. Seeds the corresponding bots with the iteration number. For a sample size of 100 games,
